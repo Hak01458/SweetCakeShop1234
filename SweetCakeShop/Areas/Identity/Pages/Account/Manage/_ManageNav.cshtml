@@ -1,0 +1,55 @@
+﻿@inject SignInManager<IdentityUser> SignInManager
+@{
+    var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
+}
+
+<ul class="nav nav-pills flex-column">
+    <li class="nav-item mb-2">
+        <a class="nav-link @ManageNavPages.IndexNavClass(ViewContext) pink-nav" id="profile" asp-page="./Index">Hồ sơ cá nhân</a>
+    </li>
+    <li class="nav-item mb-2">
+        <a class="nav-link @ManageNavPages.EmailNavClass(ViewContext) pink-nav" id="email" asp-page="./Email">Địa chỉ Email</a>
+    </li>
+    <li class="nav-item mb-2">
+        <a class="nav-link @ManageNavPages.ChangePasswordNavClass(ViewContext) pink-nav" id="change-password" asp-page="./ChangePassword">Mật khẩu</a>
+    </li>
+    <li class="nav-item mb-2">
+        <a class="nav-link @ManageNavPages.OrdersNavClass(ViewContext) pink-nav" id="orders" asp-page="./Orders">Lịch sử mua hàng</a>
+    </li>
+    @if (hasExternalLogins)
+    {
+        <li id="external-logins" class="nav-item mb-2">
+            <a id="external-login" class="nav-link @ManageNavPages.ExternalLoginsNavClass(ViewContext) pink-nav" asp-page="./ExternalLogins">Liên kết ngoài</a>
+        </li>
+    }
+  @*   <li class="nav-item mb-2">
+        <a class="nav-link @ManageNavPages.TwoFactorAuthenticationNavClass(ViewContext) pink-nav" id="two-factor" asp-page="./TwoFactorAuthentication">Xác thực 2 lớp</a>
+    </li>
+    <li class="nav-item mb-2">
+        <a class="nav-link @ManageNavPages.PersonalDataNavClass(ViewContext) pink-nav" id="personal-data" asp-page="./PersonalData">Dữ liệu cá nhân</a>
+    </li> *@
+</ul>
+
+<style>
+    /* Màu chữ và bo góc mặc định cho các nút */
+    .pink-nav {
+        color: #d81b60 !important; /* Chữ màu hồng đậm */
+        border-radius: 12px !important;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        padding: 10px 15px;
+    }
+
+        /* Khi nút đang được chọn (Active) */
+        .pink-nav.active {
+            background-color: #d81b60 !important; /* Nền hồng đậm */
+            color: white !important; /* Chữ trắng */
+            box-shadow: 0 4px 10px rgba(216, 27, 96, 0.2);
+        }
+
+        /* Hiệu ứng khi di chuột vào nút chưa chọn */
+        .pink-nav:hover:not(.active) {
+            background-color: #fce4ec !important; /* Nền hồng rất nhạt */
+            color: #ad1457 !important; /* Chữ hồng đậm hơn */
+        }
+</style>

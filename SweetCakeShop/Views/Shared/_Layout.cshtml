@@ -1,0 +1,232 @@
+﻿@using SweetCakeShop.Services
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - SweetCakeShop</title>
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/SweetCakeShop.styles.css" asp-append-version="true" />
+    <style>
+            body {
+                background-color: #ffffff !important;
+                margin: 0;
+                padding: 0;
+            }
+
+            html, body {
+                height: 100%;
+            }
+
+            .btn-pink {
+                background-color: #ff69b4 !important;
+                color: white !important;
+                border: none !important;
+            }
+
+                .btn-pink:hover {
+                    background-color: #ff1493 !important;
+                    color: white !important;
+                }
+
+            .bg-pink {
+                background-color: #ff69b4 !important;
+            }
+    </style>
+</head>
+
+<body class="d-flex flex-column min-vh-100">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm py-2">
+        <div class="container">
+
+            <!-- Logo bên trái với padding -->
+            <a class="navbar-brand fw-bold ms-3" asp-area="" asp-controller="Home" asp-action="Index">
+                <img src="~/images/logo.png" alt="SweetCakeShop" height="60" style="max-height: 60px;" />
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Tất cả menu và các thành phần khác nằm bên phải -->
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <div class="ms-auto d-flex align-items-center">
+
+                    <!-- Menu điều hướng -->
+                    <ul class="navbar-nav mb-2 mb-lg-0 me-3">
+                        <li class="nav-item">
+                            <a class="nav-link px-3 fw-normal" asp-area="" asp-controller="Home" asp-action="Index">Trang chủ</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link px-3 fw-normal" asp-area="" asp-controller="Products" asp-action="IndexPro">Sản phẩm</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link px-3 fw-normal" asp-area="" asp-controller="Home" asp-action="Contact">Liên hệ</a>
+                        </li>
+                        @if (User.IsInRole(SweetCakeShop.Constants.Roles.Admin.ToString()))
+                            {
+                            <li class="nav-item">
+                                <a class="nav-link px-3 fw-normal" asp-area="" asp-controller="Admin" asp-action="Dashboard">Dashboard</a>
+                            </li>
+                        }
+                    </ul>
+
+                    <!-- Thanh tìm kiếm bo tròn -->
+                    <form class="d-flex me-3" style="min-width: 280px;" method="get" asp-area="" asp-controller="Products" asp-action="IndexPro">
+                        <div class="input-group">
+                            <input class="form-control rounded-pill ps-4" type="search" name="searchTerm" value="@Context.Request.Query["searchTerm"]" placeholder="Tìm kiếm sản phẩm"
+                                   style="border-right: none; padding-right: 40px; background-color: #f5f5f5; border: 1px solid #e0e0e0;">
+                            <button class="btn position-absolute end-0 top-50 translate-middle-y border-0 bg-transparent"
+                                    type="submit" style="z-index: 10; margin-right: 8px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Giỏ hàng -->
+                    <a class="position-relative me-3 text-decoration-none text-dark d-flex align-items-center"
+                       asp-area="" asp-controller="Cart" asp-action="Index">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+                        </svg>
+
+                        @await Component.InvokeAsync("CartBadge")
+                    </a>
+
+                    <!-- Nút đăng nhập -->
+                    <partial name="_LoginPartial" />
+
+                </div>
+            </div>
+
+        </div>
+    </nav>
+    <div class="container flex-grow-1">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="mt-auto py-5" style="background-color: #ffeaf3;">
+        <div class="container">
+            <div class="row">
+
+                <!-- Logo và mô tả -->
+                <div class="col-lg-4 mb-4">
+                    <img src="~/images/logo.png" alt="SweetCakeShop" height="50" class="mb-3" />
+                    <p class="text-muted">
+                        Chúng tôi luôn tạo ra những chiếc bánh ngon tuyệt nhất trước khi bán cho khách hàng.
+                        Được hàng ngàn người tin tưởng, chúng tôi hướng đến việc mang lại
+                        những chiếc bánh ngon cho trải nghiệm khách hàng tốt nhất.
+                    </p>
+                </div>
+
+                <!-- Truy cập -->
+                <div class="col-lg-2 col-md-4 mb-4">
+                    <h6 class="fw-bold mb-3">Truy cập</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="/" class="text-muted text-decoration-none">Trang chủ</a></li>
+                        <li class="mb-2"><a href="/Products" class="text-muted text-decoration-none">Bán chạy</a></li>
+                        <li class="mb-2"><a href="/Products" class="text-muted text-decoration-none">Ưu đãi</a></li>
+                        <li class="mb-2"><a href="/Home/Contact" class="text-muted text-decoration-none">Liên hệ</a></li>
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none">FAQ</a></li>
+                    </ul>
+                </div>
+
+                <!-- Cần hỗ trợ -->
+                <div class="col-lg-3 col-md-4 mb-4">
+                    <h6 class="fw-bold mb-3">Cần hỗ trợ?</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none">Vận chuyển</a></li>
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none">Chính sách đổi trả</a></li>
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none">Thanh toán</a></li>
+                        <li class="mb-2"><a href="/Cart" class="text-muted text-decoration-none">Đơn hàng</a></li>
+                        <li class="mb-2"><a href="/Home/Contact" class="text-muted text-decoration-none">Liên hệ</a></li>
+                    </ul>
+                </div>
+
+                <!-- Theo dõi chúng tôi -->
+                <div class="col-lg-3 col-md-4 mb-4">
+                    <h6 class="fw-bold mb-3">Theo dõi chúng tôi</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none">Instagram</a></li>
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none">Twitter</a></li>
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none">Facebook</a></li>
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none">YouTube</a></li>
+                    </ul>
+                </div>
+
+            </div>
+
+            <!-- Copyright -->
+            <hr class="mt-4 mb-3">
+            <div class="text-center text-muted">
+                <p class="mb-0">SweetCake 2026 © All Right Reserved.</p>
+            </div>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @await Html.PartialAsync("_Toast")
+
+    <script>
+        // small client helpers to handle add-to-cart and update badge
+        function updateCartBadge() {
+            fetch('/Cart/Count')
+                .then(r => r.json())
+                .then(j => {
+                    const b = document.querySelector('.cart-badge-count');
+                    if (b) b.textContent = j.count;
+                });
+        }
+
+        function addToCartAjax(productId, quantity = 1) {
+            const body = new URLSearchParams();
+            body.append('id', productId);
+            body.append('quantity', quantity);
+
+            fetch('/Cart/Add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: body.toString()
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data?.success) {
+                    showToast(data.message, 'success');
+                    updateCartBadge();
+                } else {
+                    showToast('Không thể thêm vào giỏ hàng.', 'danger');
+                }
+            })
+            .catch(() => showToast('Lỗi thêm vào giỏ hàng.', 'danger'));
+        }
+
+        // Update badge at page load
+        document.addEventListener('DOMContentLoaded', () => updateCartBadge());
+    </script>
+
+    @RenderSection("Scripts", required: false)
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!--Start of Tawk.to Script-->
+    <script type="text/javascript">
+            var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
+            (function() {
+                var s1 = document.createElement("script"), s0 = document.getElementsByTagName("script")[0];
+                s1.async = true;
+                s1.src = 'https://embed.tawk.to/6a478534a52c231d489451e2/1jsjm0lv5';
+                s1.charset = 'UTF-8';
+                s1.setAttribute('crossorigin', '*');
+                s0.parentNode.insertBefore(s1, s0);
+            })();
+    </script>
+    <!--End of Tawk.to Script-->
+</body>
+</html>

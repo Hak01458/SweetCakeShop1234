@@ -1,0 +1,37 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Hồ sơ cá nhân";
+    ViewData["ActivePage"] = ManageNavPages.Index;
+}
+
+<h3 class="mb-3" style="color: #ad1457; font-weight: bold;">@ViewData["Title"]</h3>
+<partial name="_StatusMessage" for="StatusMessage" />
+
+<div class="row">
+    <div class="col-md-8">
+        <form id="profile-form" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="Username" class="form-control" style="border-radius: 12px; background-color: #f8f9fa;" placeholder="Tên đăng nhập của bạn" disabled />
+                <label asp-for="Username" class="form-label">Tên đăng nhập</label>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="Input.PhoneNumber" class="form-control" style="border-radius: 12px;" placeholder="Vui lòng nhập số điện thoại." />
+                <label asp-for="Input.PhoneNumber" class="form-label">Số điện thoại</label>
+                <span asp-validation-for="Input.PhoneNumber" class="text-danger small"></span>
+            </div>
+
+            <button id="update-profile-button" type="submit" class="w-100 btn btn-lg text-white shadow-sm"
+                    style="background-color: #d81b60; border-radius: 12px; font-weight: bold; padding: 12px;">
+                Lưu thay đổi
+            </button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

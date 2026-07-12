@@ -1,0 +1,91 @@
+@model SweetCakeShop.Models.Order
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = $"Chi tiết đơn #{Model.OrderId}";
+}
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success py-2">@success</div>
+}
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger py-2">@error</div>
+}
+@if (TempData["Warning"] is string warning)
+{
+    <div class="alert alert-warning py-2">@warning</div>
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">Chi tiết đơn hàng</h5>
+
+    <div class="d-flex gap-2">
+        @if (Model.Status == "Pending")
+        {
+            <form asp-action="MakeCake" asp-controller="Admin" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="orderId" value="@Model.OrderId" />
+                <button type="submit" class="btn btn-sm btn-primary">Làm bánh</button>
+            </form>
+        }
+
+        <a asp-action="Orders" asp-controller="Admin" class="btn btn-sm btn-outline-secondary">Quay lại</a>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 mb-3">
+    <div class="card-body">
+        <div class="row g-2">
+            <div class="col-md-4"><strong>Ngày đặt:</strong> @Model.OrderDate.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</div>
+            <div class="col-md-4"><strong>Trạng thái:</strong> @Model.Status</div>
+            <div class="col-md-4"><strong>Tổng giá:</strong> @Model.TotalPrice.ToString("N0") đ</div>
+            <div class="col-md-4"><strong>Khách hàng:</strong> @Model.CustomerName</div>
+            <div class="col-md-4"><strong>Email:</strong> @Model.CustomerEmail</div>
+            <div class="col-md-4"><strong>SĐT:</strong> @Model.CustomerPhone</div>
+            <div class="col-12"><strong>Địa chỉ:</strong> @Model.ShippingAddress</div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white">
+        <h6 class="mb-0">Các sản phẩm trong đơn</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th style="width:70px;">STT</th>
+                        <th>Sản phẩm</th>
+                        <th style="width:120px;">SL</th>
+                        <th style="width:160px;">Đơn giá</th>
+                        <th style="width:160px;">Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @{
+                    var stt = 0;
+                }
+                @foreach (var item in Model.OrderDetails)
+                {
+                    stt++;
+                    <tr>
+                        <td>@stt</td>
+                        <td>@(item.Product?.ProductName ?? $"SP #{item.ProductId}")</td>
+                        <td>@item.Quantity</td>
+                        <td>@item.Price.ToString("N0") đ</td>
+                        <td>@((item.Price * item.Quantity).ToString("N0")) đ</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+
+        @if (!Model.OrderDetails.Any())
+        {
+            <div class="text-muted">Đơn hàng chưa có chi tiết.</div>
+        }
+    </div>
+</div>

@@ -1,0 +1,164 @@
+@model IEnumerable<SweetCakeShop.Models.Ingredient>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Quản lý nguyên liệu";
+    var stt = 0;
+}
+
+<div class="container-fluid px-0">
+    <div class="row g-3">
+        <div class="col-12 col-lg-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Thêm nguyên liệu</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="CreateIngredient" asp-controller="Admin" method="post">
+                        @Html.AntiForgeryToken()
+                        <div class="mb-3">
+                            <label class="form-label">Tên nguyên liệu</label>
+                            <input type="text" name="name" class="form-control" maxlength="120" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Số lượng</label>
+                            <input type="number" name="quantity" class="form-control decimal-2" min="0" step="0.01" lang="en-US" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Đơn vị đo</label>
+                            <input type="text" name="measurement" class="form-control" maxlength="30" placeholder="g, ml, quả..." required />
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Thêm mới</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Danh sách nguyên liệu</h5>
+                    <span class="badge text-bg-secondary">@Model.Count()</span>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Success"] is string success)
+                    {
+                        <div class="alert alert-success py-2">@success</div>
+                    }
+                    @if (TempData["Error"] is string error)
+                    {
+                        <div class="alert alert-danger py-2">@error</div>
+                    }
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th style="width: 70px;">STT</th>
+                                    <th>Tên nguyên liệu</th>
+                                    <th style="width: 130px;">Số lượng</th>
+                                    <th style="width: 110px;">Đơn vị</th>
+                                    <th style="width: 110px;">Thêm</th>
+                                    <th style="width: 110px;">Trừ</th>
+                                    <th class="text-end" style="width: 180px;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    stt++;
+                                    <tr>
+                                        <td>@stt</td>
+                                        <td>
+                                            <input type="text" name="name" value="@item.Name" class="form-control form-control-sm" form="edit-@item.IngredientID" required />
+                                        </td>
+                                        <td>
+                                            <input type="number" value="@item.Quantity.ToString("0.00")" class="form-control form-control-sm" readonly />
+                                        </td>
+                                        <td>
+                                            <input type="text" name="measurement" value="@item.Measurement" class="form-control form-control-sm" form="edit-@item.IngredientID" required />
+                                        </td>
+                                        <td>
+                                            <input type="number" name="addAmount" value="0" min="0" step="0.01" class="form-control form-control-sm decimal-2" lang="en-US" form="edit-@item.IngredientID" />
+                                        </td>
+                                        <td>
+                                            <input type="number" name="subtractAmount" value="0" min="0" step="0.01" class="form-control form-control-sm decimal-2" lang="en-US" form="edit-@item.IngredientID" />
+                                        </td>
+                                        <td class="text-end">
+                                            <form id="edit-@item.IngredientID" asp-action="UpdateIngredient" asp-controller="Admin" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="ingredientId" value="@item.IngredientID" />
+                                                <button type="submit" class="btn btn-sm btn-outline-primary">Lưu</button>
+                                            </form>
+
+                                            <form asp-action="DeleteIngredient" asp-controller="Admin" method="post" class="d-inline"
+                                                  onsubmit="return confirm('Bạn có chắc muốn xóa nguyên liệu này?');">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="ingredientId" value="@item.IngredientID" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if (!Model.Any())
+                    {
+                        <div class="text-muted">Chưa có nguyên liệu nào.</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('keydown', function (e) {
+            const input = e.target;
+            if (!input.classList.contains('decimal-2')) return;
+
+            // Cho phép xóa với di chuyển với Enter thì tự động lưu
+            const allowedKeys = [
+                'Backspace', 'Delete', 'Tab', 'Escape', 'Enter',
+                'ArrowLeft', 'ArrowRight', 'Home', 'End'
+            ];
+
+            if (allowedKeys.includes(e.key) || e.ctrlKey || e.metaKey) return;
+
+            // Chặn dấu phẩy
+            if (e.key === ',') {
+                e.preventDefault();
+                return;
+            }
+
+            // Cho phép số 0-9
+            if (/^\d$/.test(e.key)) {
+                const value = input.value;
+                const dotIndex = value.indexOf('.');
+                if (dotIndex >= 0) {
+                    const decimals = value.substring(dotIndex + 1);
+                    const cursor = input.selectionStart ?? value.length;
+                    const hasSelection = (input.selectionStart ?? 0) !== (input.selectionEnd ?? 0);
+
+                    if (!hasSelection && cursor > dotIndex && decimals.length >= 2) {
+                        e.preventDefault();
+                    }
+                }
+                return;
+            }
+
+            // Cho phép 1 dấu chấm duy nhất
+            if (e.key === '.') {
+                if (input.value.includes('.')) {
+                    e.preventDefault();
+                }
+                return;
+            }
+
+            // Chặn ký tự khác
+            e.preventDefault();
+        });
+    </script>
+}

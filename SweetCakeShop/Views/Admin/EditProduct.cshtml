@@ -1,0 +1,62 @@
+@using SweetCakeShop.Models
+@model Product
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Chỉnh sửa bánh";
+    var categories = ViewBag.Categories as List<Category> ?? new List<Category>();
+}
+
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white">
+        <h5 class="mb-0">Chỉnh sửa bánh</h5>
+    </div>
+    <div class="card-body">
+        <form asp-action="EditProduct" asp-controller="Admin" method="post" enctype="multipart/form-data" class="row g-3">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="productId" value="@Model.ProductId" />
+
+            <div class="col-12 col-md-6">
+                <label class="form-label">Tên bánh</label>
+                <input name="productName" value="@Model.ProductName" class="form-control" required />
+            </div>
+
+            <div class="col-12 col-md-3">
+                <label class="form-label">Giá</label>
+                <input type="number" name="price" value="@Model.Price" class="form-control" min="0" step="1000" required />
+            </div>
+
+            <div class="col-12 col-md-3">
+                <label class="form-label">Danh mục</label>
+                <select name="categoryId" class="form-select" required>
+                    @foreach (var c in categories)
+                    {
+                        <option value="@c.CategoryId" selected="@(c.CategoryId == Model.CategoryId)">
+                            @c.CategoryName
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-12">
+                <label class="form-label">Mô tả</label>
+                <input name="description" value="@Model.Description" class="form-control" />
+            </div>
+
+            <div class="col-12">
+                <label class="form-label">Upload Image</label>
+                <input type="file" name="imageFile" class="form-control" accept="image/*" />
+                @if (!string.IsNullOrWhiteSpace(Model.Image))
+                {
+                    <div class="mt-2">
+                        <img src="@Model.Image" style="max-height:120px;" class="rounded border" />
+                    </div>
+                }
+            </div>
+
+            <div class="col-12 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                <a asp-action="Products" asp-controller="Admin" class="btn btn-outline-secondary">Quay lại</a>
+            </div>
+        </form>
+    </div>
+</div>

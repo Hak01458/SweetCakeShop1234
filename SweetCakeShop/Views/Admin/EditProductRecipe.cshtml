@@ -1,0 +1,110 @@
+@model SweetCakeShop.Models.AdminEditProductRecipeViewModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Chỉnh sửa nguyên liệu cho bánh";
+    var stt = 0;
+}
+
+<div class="mb-3">
+    <h4 class="mb-1">@Model.ProductName</h4>
+    <div class="text-muted">Quản lý công thức nguyên liệu</div>
+</div>
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success py-2">@success</div>
+}
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger py-2">@error</div>
+}
+
+<div class="row g-3">
+    <div class="col-12 col-lg-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white">
+                <h6 class="mb-0">Thêm nguyên liệu vào bánh</h6>
+            </div>
+            <div class="card-body">
+                <form asp-action="AddIngredientToProduct" asp-controller="Admin" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="productId" value="@Model.ProductId" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Nguyên liệu</label>
+                        <select name="ingredientId" class="form-select" required>
+                            <option value="">-- Chọn nguyên liệu --</option>
+                            @foreach (var i in Model.IngredientOptions)
+                            {
+                                <option value="@i.IngredientId">@i.Name (@i.Measurement)</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Định lượng cho 1 bánh</label>
+                        <input type="number" name="quantity" class="form-control" min="0.01" step="0.01" required />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Thêm / Cập nhật</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">Danh sách nguyên liệu trong công thức</h6>
+                <span class="badge text-bg-secondary">@Model.RecipeItems.Count</span>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th style="width:70px;">STT</th>
+                                <th>Nguyên liệu</th>
+                                <th style="width:210px;">Định lượng / 1 bánh</th>
+                                <th class="text-end" style="width:180px;">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var item in Model.RecipeItems)
+                        {
+                            stt++;
+                            <tr>
+                                <td>@stt</td>
+                                <td>@item.IngredientName (@item.Measurement)</td>
+                                <td>
+                                    <form asp-action="UpdateRecipeQuantity" asp-controller="Admin" method="post" class="d-flex gap-2">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="recipeId" value="@item.RecipeId" />
+                                        <input type="hidden" name="productId" value="@Model.ProductId" />
+                                        <input type="number" name="quantity" value="@item.Quantity" min="0.01" step="0.01" class="form-control form-control-sm" required />
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">Lưu</button>
+                                    </form>
+                                </td>
+                                <td class="text-end">
+                                    <form asp-action="RemoveIngredientFromProduct" asp-controller="Admin" method="post" class="d-inline"
+                                          onsubmit="return confirm('Xóa nguyên liệu này khỏi công thức?');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="recipeId" value="@item.RecipeId" />
+                                        <input type="hidden" name="productId" value="@Model.ProductId" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+
+                @if (!Model.RecipeItems.Any())
+                {
+                    <div class="text-muted">Bánh này chưa có công thức nguyên liệu.</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

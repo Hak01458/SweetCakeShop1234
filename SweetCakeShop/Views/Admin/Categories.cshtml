@@ -1,0 +1,89 @@
+@model IEnumerable<SweetCakeShop.Models.Category>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Quản lý danh mục";
+    var stt = 0;
+}
+
+<div class="container-fluid px-0">
+    <div class="row g-3">
+        <div class="col-12 col-lg-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Thêm danh mục</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="CreateCategory" asp-controller="Admin" method="post">
+                        @Html.AntiForgeryToken()
+                        <div class="mb-3">
+                            <label class="form-label">Tên danh mục</label>
+                            <input type="text" name="categoryName" class="form-control" maxlength="100" required />
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Thêm mới</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Danh sách danh mục</h5>
+                    <span class="badge text-bg-secondary">@Model.Count()</span>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Success"] is string success)
+                    {
+                        <div class="alert alert-success py-2">@success</div>
+                    }
+                    @if (TempData["Error"] is string error)
+                    {
+                        <div class="alert alert-danger py-2">@error</div>
+                    }
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th style="width: 90px;">STT</th>
+                                    <th>Tên danh mục</th>
+                                    <th class="text-end" style="width: 260px;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    stt++;
+                                    <tr>
+                                        <td>@stt</td>
+                                        <td>
+                                            <form asp-action="UpdateCategory" asp-controller="Admin" method="post" class="d-flex gap-2">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="categoryId" value="@item.CategoryId" />
+                                                <input type="text" name="categoryName" value="@item.CategoryName" class="form-control form-control-sm" required />
+                                                <button type="submit" class="btn btn-sm btn-outline-primary">Lưu</button>
+                                            </form>
+                                        </td>
+                                        <td class="text-end">
+                                            <form asp-action="DeleteCategory" asp-controller="Admin" method="post" class="d-inline"
+                                                  onsubmit="return confirm('Bạn có chắc muốn xóa danh mục này?');">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="categoryId" value="@item.CategoryId" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if (!Model.Any())
+                    {
+                        <div class="text-muted">Chưa có danh mục nào.</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

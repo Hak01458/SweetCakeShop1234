@@ -1,0 +1,201 @@
+@using System.Text.Json
+@using SweetCakeShop.Models
+@model IEnumerable<SweetCakeShop.Models.AdminProductStockViewModel>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Số lượng bánh có thể làm";
+    var stt = 0;
+    var categories = ViewBag.Categories as List<Category> ?? new List<Category>();
+    var json = JsonSerializer.Serialize(Model, new JsonSerializerOptions
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    });
+}
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success py-2">@success</div>
+}
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger py-2">@error</div>
+}
+
+<div class="card shadow-sm border-0 mb-3">
+    <div class="card-header bg-white">
+        <h6 class="mb-0">Thêm bánh</h6>
+    </div>
+    <div class="card-body">
+        <form asp-action="CreateProduct" asp-controller="Admin" method="post" enctype="multipart/form-data" class="row g-2">
+            @Html.AntiForgeryToken()
+            <div class="col-12 col-md-3">
+                <input name="productName" class="form-control" placeholder="Tên bánh" required />
+            </div>
+            <div class="col-12 col-md-2">
+                <input type="number" name="price" class="form-control" min="0" step="1000" placeholder="Giá" required />
+            </div>
+            <div class="col-12 col-md-2">
+                <select name="categoryId" class="form-select" required>
+                    <option value="">Danh mục</option>
+                    @foreach (var c in categories)
+                    {
+                        <option value="@c.CategoryId">@c.CategoryName</option>
+                    }
+                </select>
+            </div>
+            <div class="col-12 col-md-3">
+                <input type="file" name="imageFile" class="form-control" accept="image/*" />
+            </div>
+            <div class="col-12 col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Thêm bánh</button>
+            </div>
+            <div class="col-12">
+                <input name="description" class="form-control" placeholder="Mô tả (tuỳ chọn)" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white">
+        <h5 class="mb-0">Kiểm tra nguyên liệu theo công thức</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle" id="product-stock-table">
+                <thead>
+                    <tr>
+                        <th style="width:70px;">STT</th>
+                        <th>Bánh</th>
+                        <th style="width:170px;">Đủ nguyên liệu</th>
+                        <th style="width:220px;">Số lượng bánh làm được</th>
+                        <th style="width:170px;">Số lượng bánh làm</th>
+                        <th style="width:260px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        stt++;
+                        <tr data-product-id="@item.ProductId">
+                            <td>@stt</td>
+                            <td>
+                                <div class="fw-semibold">@item.ProductName</div>
+                                <small class="text-muted">
+                                    @string.Join(", ", item.Ingredients.Select(i => $"{i.IngredientName} ({i.RequiredPerCake} {i.Measurement})"))
+                                </small>
+                            </td>
+                            <td class="enough-col">
+                                @if (item.HasEnoughIngredients)
+                                {
+                                    <span class="badge text-bg-success">@item.CanMakeCount</span>
+                                }
+                                else
+                                {
+                                    <span class="badge text-bg-danger">❌</span>
+                                }
+                            </td>
+                            <td class="canmake-col"><span class="fw-semibold">@item.CanMakeCount</span></td>
+                            <td>
+                                <input type="number" class="form-control form-control-sm make-input"
+                                       min="0" step="1" value="0" data-product-id="@item.ProductId" />
+                            </td>
+                            <td class="d-flex gap-1">
+                                <a asp-controller="Admin" asp-action="EditProduct" asp-route-productId="@item.ProductId"
+                                   class="btn btn-sm btn-outline-secondary">
+                                    Chỉnh sửa bánh
+                                </a>
+
+                                <a asp-controller="Admin" asp-action="EditProductRecipe" asp-route-productId="@item.ProductId"
+                                   class="btn btn-sm btn-outline-primary">
+                                    Chỉnh sửa nguyên liệu
+                                </a>
+
+                                <form asp-action="DeleteProduct" asp-controller="Admin" method="post"
+                                      onsubmit="return confirm('Bạn có chắc muốn xóa bánh này?');">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="productId" value="@item.ProductId" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Xóa bánh</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(() => {
+    const products = @Html.Raw(json);
+    const baseStockByIngredient = {};
+    for (const p of products) {
+        for (const ing of p.ingredients) {
+            if (baseStockByIngredient[ing.ingredientId] === undefined) {
+                baseStockByIngredient[ing.ingredientId] = Number(ing.inStock);
+            }
+        }
+    }
+
+    const inputs = document.querySelectorAll('.make-input');
+
+    function recompute() {
+        const plannedByProduct = {};
+        inputs.forEach(i => {
+            const pid = Number(i.dataset.productId);
+            const val = Math.max(0, parseInt(i.value || '0', 10) || 0);
+            i.value = val;
+            plannedByProduct[pid] = val;
+        });
+
+        const remainingStock = { ...baseStockByIngredient };
+
+        for (const p of products) {
+            const makeCount = plannedByProduct[p.productId] || 0;
+            if (makeCount <= 0) continue;
+
+            for (const ing of p.ingredients) {
+                const use = Number(ing.requiredPerCake) * makeCount;
+                remainingStock[ing.ingredientId] = (remainingStock[ing.ingredientId] ?? 0) - use;
+            }
+        }
+
+        for (const p of products) {
+            const row = document.querySelector(`tr[data-product-id="${p.productId}"]`);
+            if (!row) continue;
+
+            const enoughCol = row.querySelector('.enough-col');
+            const canmakeCol = row.querySelector('.canmake-col span');
+
+            if (!p.ingredients || p.ingredients.length === 0) {
+                enoughCol.innerHTML = '<span class="badge text-bg-danger">❌</span>';
+                canmakeCol.textContent = '0';
+                continue;
+            }
+
+            let enough = true;
+            let canMake = Number.MAX_SAFE_INTEGER;
+
+            for (const ing of p.ingredients) {
+                const stock = Number(remainingStock[ing.ingredientId] ?? 0);
+                const need = Number(ing.requiredPerCake);
+                if (stock < need) enough = false;
+                const makeByIng = Math.floor(stock / need);
+                if (makeByIng < canMake) canMake = makeByIng;
+            }
+
+            if (!Number.isFinite(canMake) || canMake < 0) canMake = 0;
+            enoughCol.innerHTML = enough
+                ? `<span class="badge text-bg-success">${canMake}</span>`
+                : '<span class="badge text-bg-danger">❌</span>';
+            canmakeCol.textContent = String(canMake);
+        }
+    }
+
+    inputs.forEach(i => i.addEventListener('input', recompute));
+    recompute();
+})();
+</script>
+}

@@ -1,0 +1,83 @@
+﻿@page
+@model RegisterConfirmationModel
+@{
+    ViewData["Title"] = "Đăng ký thành công";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6 text-center">
+            <div class="card border-0 shadow-lg p-5" style="border-radius: 30px; background-color: #fff5f8;">
+                <div class="card-body">
+                    <div class="mb-4">
+                        <i class="bi bi-check-circle-fill" style="font-size: 4rem; color: #d81b60;"></i>
+                    </div>
+
+                    <h2 class="mb-3" style="color: #d81b60; font-weight: bold;">
+                        Chúc mừng bạn!
+                    </h2>
+                    <h4 class="mb-4 text-secondary">Tài khoản của bạn đã được tạo thành công</h4>
+
+                    <div class="alert alert-light border-0 shadow-sm p-4 mb-4" style="border-radius: 15px;">
+                        <p class="text-muted mb-0">
+                            Chào mừng bạn đến với thế giới bánh ngọt <b>SweetCake</b>.
+                            Bây giờ bạn có thể đăng nhập để bắt đầu mua sắm những chiếc bánh tuyệt vời nhất:
+                        </p>
+
+                        <a asp-page="./Login" id="confirm-link"
+                           class="btn btn-lg text-white mt-4 w-100"
+                           style="background-color: #d81b60; border-radius: 12px; font-weight: bold; padding: 12px 0; transition: 0.3s;">
+                            Quay lại Đăng nhập ngay
+                        </a>
+     
+                    </div>
+
+                    <p class="small text-muted">
+                        <i class="bi bi-magic me-1"></i>
+                        Nhiều ưu đãi ngọt ngào đang chờ đợi bạn phía trước!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Giữ nguyên phần Style của Sam */
+    h1 {
+        display: none;
+    }
+
+    #confirm-link:hover {
+        background-color: #ad144b !important;
+        transform: scale(1.02);
+        box-shadow: 0 8px 20px rgba(216, 27, 96, 0.3);
+    }
+
+    .bi-check-circle-fill {
+        display: inline-block;
+        animation: heartBeat 1.5s infinite;
+    }
+
+    @@keyframes heartBeat {
+        0% {
+            transform: scale(1);
+        }
+
+        14% {
+            transform: scale(1.1);
+        }
+
+        28% {
+            transform: scale(1);
+        }
+
+        42% {
+            transform: scale(1.1);
+        }
+
+        70% {
+            transform: scale(1);
+        }
+    }
+</style>

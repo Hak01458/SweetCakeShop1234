@@ -1,0 +1,59 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+  color: var(--bs-secondary-color);
+  text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+  text-align: start;
+}
+/* Xóa mũi tên dropdown sau cái logo người dùng */
+.custom-login-dropdown .dropdown-toggle::after {
+    display: none !important;
+}
+
+/* Hiệu ứng khi di chuột qua ảnh logo cho mượt */
+.custom-login-dropdown img:hover {
+    opacity: 0.8;
+    cursor: pointer;
+}
+/* Tùy chỉnh cho tên người dùng khi hiện thay thế icon */
+.user-name-text {
+    font-weight: 600;
+    color: #d63384; /* Màu hồng đậm cho đúng tone SweetCake */
+    cursor: pointer;
+    border-bottom: 1px dashed transparent;
+    transition: 0.3s;
+}
+
+    .user-name-text:hover {
+        color: #b02a6b;
+        border-bottom: 1px dashed #b02a6b;
+    }
+
+/* Ẩn mũi tên mặc định của Bootstrap để giao diện sạch sẽ */
+.custom-user-nav .dropdown-toggle::after {
+    display: none !important;
+}

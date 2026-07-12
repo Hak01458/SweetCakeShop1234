@@ -1,0 +1,70 @@
+﻿@page
+@model LoginModel
+
+@{
+    ViewData["Title"] = "Đăng nhập";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="card border-0 shadow-lg p-4" style="border-radius: 25px; background-color: #ffffff;">
+                <div class="card-body">
+
+                    <h1 class="text-center mb-4" style="color: #d81b60; font-weight: bold; font-size:1.6rem; white-space: nowrap;">
+                        Chào mừng bạn trở lại với thế giới ngọt ngào!
+                    </h1>
+
+                    <p class="text-center mb-4">
+                        Bạn mới bắt đầu? <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl" class="text-decoration-none" style="color: #d81b60; font-weight: bold;">Đăng ký ngay</a>
+                    </p>
+
+                    <form id="account" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Input.Email" class="form-label fw-bold" style="color: #444;">Tên đăng nhập hoặc Email *</label>
+                            <input asp-for="Input.Email" class="form-control p-3" style="border-radius: 12px; border: 1px solid #ddd;" placeholder="Nhập tên đăng nhập hoặc email" />
+                            <span asp-validation-for="Input.Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Input.Password" class="form-label fw-bold" style="color: #444;">Mật khẩu *</label>
+                            <input asp-for="Input.Password" class="form-control p-3" style="border-radius: 12px; border: 1px solid #ddd;" placeholder="Nhập mật khẩu" />
+                            <span asp-validation-for="Input.Password" class="text-danger small"></span>
+                        </div>
+
+                        <div class="checkbox mb-4 d-flex align-items-center">
+                            <input class="form-check-input me-2" asp-for="Input.RememberMe" style="cursor: pointer;" />
+                            <label asp-for="Input.RememberMe" class="form-label mb-0" style="cursor: pointer;">Ghi nhớ đăng nhập</label>
+                        </div>
+
+                        <button id="login-submit" type="submit" class="w-100 btn btn-lg text-white mb-3 shadow-sm" style="background-color: #d81b60; border-radius: 12px; font-weight: bold; padding: 12px;">
+                            Đăng nhập
+                        </button>
+
+                        <div class="text-start mt-2">
+                            <a id="forgot-password" asp-page="./ForgotPassword" class="text-secondary fw-bold text-decoration-underline" style="font-size: 0.9rem;">Quên mật khẩu?</a>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (TempData["LoginMessage"] != null)
+{
+    var serialized = System.Text.Json.JsonSerializer.Serialize(TempData["LoginMessage"].ToString());
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // showToast is defined in _Toast partial included by the layout
+            showToast(@Html.Raw(serialized), 'warning', 5000);
+        });
+    </script>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

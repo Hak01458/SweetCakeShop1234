@@ -1,0 +1,12 @@
+﻿
+@{
+    ViewData["Title"] = "Order placed";
+    var orderId = ViewData["OrderId"];
+}
+
+<div class="container my-5 text-center">
+    <h2 class="mb-3">Cảm ơn bạn rất nhiều vì đã mua bánh của bên chúng mình</h2></hr>
+    <p class="lead">Đơn hàng của bạn đã được tạo. Chúng tôi sẽ liên hệ bạn sớm.</p>
+    <img src="~/images/ThankFor.png" class="d-block w-100 rounded" style="max-height: 400px; width: 100%; object-fit: contain;" />
+    <a asp-controller="Home" asp-action="Index" class="btn btn-pink mt-3">Tiếp tục mua sắm</a>
+</div>

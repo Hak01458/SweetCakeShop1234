@@ -1,0 +1,38 @@
+﻿@{
+    if (ViewData.TryGetValue("ParentLayout", out var parentLayout) && parentLayout != null)
+    {
+        Layout = parentLayout.ToString();
+    }
+    else
+    {
+        Layout = "/Areas/Identity/Pages/_Layout.cshtml";
+    }
+}
+
+<div class="container mt-4">
+    <h1 class="mb-4" style="color: #d81b60; font-weight: bold;">Quản lý tài khoản</h1>
+
+    <div class="card border-0 shadow-sm p-4" style="border-radius: 20px;">
+        <h2 class="h4 mb-3" style="color: #ad1457;">Thay đổi cài đặt cá nhân của bạn</h2>
+
+        <hr style="border-top: 2px solid #f06292; opacity: 0.5;" />
+
+        <div class="row mt-4">
+            <div class="col-md-3 mb-4">
+                <div class="p-3" style="background-color: #fff1f6; border-radius: 15px; border: 1px solid #f8bbd0;">
+                    <partial name="_ManageNav" />
+                </div>
+            </div>
+
+            <div class="col-md-9">
+                <div class="ps-md-4">
+                    @RenderBody()
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @RenderSection("Scripts", required: false)
+}

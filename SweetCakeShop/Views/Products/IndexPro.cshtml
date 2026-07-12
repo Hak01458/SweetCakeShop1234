@@ -1,0 +1,175 @@
+@using X.PagedList.Mvc.Core
+@using X.PagedList
+@model IPagedList<SweetCakeShop.Models.Product>
+
+@{
+    ViewData["Title"] = "Tất cả sản phẩm";
+    var currentSort = ViewData["CurrentSort"] as string;
+    var currentSearch = ViewData["CurrentSearch"] as string;
+    var currentCategoryId = ViewData["CurrentCategoryId"] is int categoryId ? categoryId : (int?)null;
+    var currentCategoryName = ViewData["CurrentCategoryName"] as string;
+}
+
+<div class="container-fluid px-lg-5 mt-4">
+
+    <!-- Header với tiêu đề và filter -->
+    <div class="row align-items-center mb-4">
+        <div class="col-md-6">
+            <h2 class="fw-bold">Tất cả sản phẩm</h2>
+        </div>
+        <div class="col-md-6 text-end">
+            <form method="get" class="d-inline-flex align-items-center">
+                <input type="hidden" name="searchTerm" value="@currentSearch" />
+                <input type="hidden" name="categoryId" value="@currentCategoryId" />
+                <input type="hidden" name="categoryName" value="@currentCategoryName" />
+                <label class="me-2 text-muted">Sắp xếp theo:</label>
+                <select name="sortOrder" class="form-select" style="width: auto;" onchange="this.form.submit()">
+                    <option value="" selected="@(string.IsNullOrEmpty(currentSort))">Mặc định</option>
+                    <option value="price_asc" selected="@(currentSort == "price_asc")">Giá: Thấp đến Cao</option>
+                    <option value="price_desc" selected="@(currentSort == "price_desc")">Giá: Cao đến Thấp</option>
+                </select>
+            </form>
+        </div>
+    </div>
+
+    <!-- Grid sản phẩm -->
+    <div class="row g-4">
+        @foreach (var product in Model)
+        {
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+            <a class="text-decoration-none text-dark" asp-action="Details" asp-route-id="@product.ProductId">
+                <div class="card h-100 shadow-sm product-card">
+                
+                    <!-- Hình ảnh sản phẩm -->
+                    <div class="product-image-wrapper" style="height: 200px; overflow: hidden;">
+                        @if (!string.IsNullOrEmpty(product.Image))
+                        {
+                            <img src="@product.Image" class="card-img-top" alt="@product.ProductName" style="height: 100%; object-fit: cover;">
+                        }
+                        else
+                        {
+                            <img src="~/images/no-image.png" class="card-img-top" alt="No Image" style="height: 100%; object-fit: cover;">
+                        }
+                    </div>
+
+                    <!-- Thông tin sản phẩm -->
+                    <div class="card-body d-flex flex-column">
+                    
+                        <!-- Tên sản phẩm -->
+                        <h6 class="card-title text-truncate mb-2">@product.ProductName</h6>
+
+                        <!-- Rating (tạm thời hiển thị mặc định) -->
+                        <div class="mb-2">
+                            <span class="text-warning">★★★★★</span>
+                            <span class="text-muted small">(0)</span>
+                        </div>
+
+                        <!-- Giá -->
+                        <div class="mt-auto">
+                            <p class="mb-1">
+                                <span class="text-success fw-bold fs-5">@product.Price.ToString("N0") đ</span>
+                            </p>
+
+                            <!-- Nút thêm vào giỏ hàng -->
+                            <button type="button" class="btn btn-outline-success btn-sm w-100" onclick="addToCart(event, @product.ProductId)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                    <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                                </svg>
+                                Thêm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </a>
+            </div>
+        }
+    </div>
+<div class="d-flex justify-content-center mt-4 pagination-custom">
+    @Html.PagedListPager(
+        Model,
+        page => Url.Action("IndexPro", new { page, sortOrder = currentSort, searchTerm = currentSearch, categoryId = currentCategoryId, categoryName = currentCategoryName }),
+        new PagedListRenderOptions
+        {
+            LiElementClasses = new[] { "page-item" },
+            PageClasses = new[] { "page-link" }
+        })
+</div>
+
+    <!-- Thông báo nếu không có sản phẩm -->
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center mt-5" role="alert">
+            <h5>Chưa có sản phẩm nào</h5>
+            <p class="mb-0">Vui lòng quay lại sau!</p>
+        </div>
+    }
+
+</div>
+
+<style>
+    .product-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid #e0e0e0;
+    }
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1) !important;
+    }
+    .card-title {
+        font-size: 1rem;
+        font-weight: 500;
+        min-height: 2.5rem;
+    }
+
+    //chuyển trang
+    .pagination-custom ul {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        gap: 6px;
+    }
+
+    .pagination-custom .page-item {
+        border-radius: 8px;
+    }
+
+    .pagination-custom .page-link {
+        color: #d63384;
+        border: 1px solid #ddd;
+        padding: 8px 14px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .pagination-custom .page-link:hover {
+        background: #ffb6d5;
+        color: white;
+        border-color: #ffb6d5;
+    }
+
+    .pagination-custom .active .page-link {
+    background: #ff8ec7;
+        color: white;
+    border-color: #ff8ec7;
+        font-weight: 600;
+    }
+
+    .pagination-custom .disabled .page-link {
+        color: #aaa;
+        pointer-events: none;
+    background: #ffe4ef;
+    }
+</style>
+
+<script>
+    // Prevent anchor navigation when clicking the button inside card and add quantity = 1
+    function addToCart(e, productId) {
+        // stop the anchor navigation
+        if (e && typeof e.stopPropagation === 'function') {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        addToCartAjax(productId, 1);
+    }
+</script>

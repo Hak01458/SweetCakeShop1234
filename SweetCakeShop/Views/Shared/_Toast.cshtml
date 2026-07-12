@@ -1,0 +1,43 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+<div aria-live="polite" aria-atomic="true" class="position-fixed top-0 end-0 p-3" style="z-index: 1080;">
+    <div id="toast-container"></div>
+</div>
+
+<script>
+    function showToast(message, type = 'info', delay = 3000) {
+        // type: 'info', 'success', 'danger', 'warning'
+        const toastId = 't' + Date.now();
+        const colorClass = {
+            info: 'bg-info text-white',
+            success: 'bg-success text-white',
+            danger: 'bg-danger text-white',
+            warning: 'bg-warning text-dark'
+        }[type] || 'bg-info text-white';
+
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = `
+            <div id="${toastId}" class="toast ${colorClass} align-items-center border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="${delay}">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>`;
+        document.getElementById('toast-container')?.appendChild(wrapper);
+
+        var toastEl = document.getElementById(toastId);
+        // Ensure bootstrap JS is loaded (layout already includes bootstrap.bundle)
+        var toast = new bootstrap.Toast(toastEl);
+        toast.show();
+
+        toastEl.addEventListener('hidden.bs.toast', function () {
+            toastEl.remove();
+        });
+    }
+</script>

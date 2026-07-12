@@ -1,0 +1,282 @@
+﻿@model SweetCakeShop.Models.ViewModels.ContactFormViewModel
+
+@{
+    ViewData["Title"] = "Liên hệ";
+}
+
+<div class="contact-page py-4 py-md-5">
+    <div class="contact-hero rounded-4 p-4 p-md-5 mb-5 text-center">
+        <h1 class="hero-title fw-bold mb-3">Liên hệ với chúng tôi</h1>
+        <p class="hero-subtitle mb-4">Chúng tôi luôn sẵn sàng lắng nghe và hỗ trợ bạn 24/7</p>
+        <div class="hero-line mx-auto"></div>
+    </div>
+
+    <div class="row g-4 g-lg-5">
+        <div class="col-lg-6">
+            <h2 class="section-title fw-bold mb-3">Thông tin liên hệ</h2>
+            <p class="section-desc mb-2">Hãy liên hệ với chúng tôi qua các kênh dưới đây hoặc điền form bên cạnh.</p>
+            <p class="section-desc mb-4">Đội ngũ hỗ trợ khách hàng của chúng tôi sẽ phản hồi trong vòng 24 giờ.</p>
+
+            <div class="contact-card d-flex gap-3 align-items-start p-4 mb-3">
+                <div class="icon-box">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657 13.414 20.9a1.998 1.998 0 0 1-2.827 0L6.343 16.657a8 8 0 1 1 11.314 0Z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                    </svg>
+                </div>
+                <div>
+                    <h5 class="mb-1 fw-bold">Địa chỉ</h5>
+                    <p class="mb-0 text-secondary">806 Lê Quang Đạo, Trung Mỹ Tây, Quận 12, Thành phố Hồ Chí Minh</p>
+                    <p class="mb-0 text-secondary">Việt Nam</p>
+                </div>
+            </div>
+
+            <div class="contact-card d-flex gap-3 align-items-start p-4 mb-3">
+                <div class="icon-box">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 0 1 2-2h3.28a1 1 0 0 1 .948.684l1.498 4.493a1 1 0 0 1-.502 1.21l-2.257 1.13a11.042 11.042 0 0 0 5.516 5.516l1.13-2.257a1 1 0 0 1 1.21-.502l4.493 1.498a1 1 0 0 1 .684.949V19a2 2 0 0 1-2 2h-1C9.716 21 3 14.284 3 6V5Z" />
+                    </svg>
+                </div>
+                <div>
+                    <h5 class="mb-1 fw-bold">Điện thoại</h5>
+                    <p class="mb-0 text-secondary">+84 355 855 155</p>
+                    <p class="mb-0 text-secondary">+84 988 899 899</p>
+                </div>
+            </div>
+
+            <div class="contact-card d-flex gap-3 align-items-start p-4 mb-3">
+                <div class="icon-box">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 0 0 2.22 0L21 8M5 19h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2Z" />
+                    </svg>
+                </div>
+                <div>
+                    <h5 class="mb-1 fw-bold">Email</h5>
+                    <p class="mb-0 text-secondary">quocanh02@greencart.vn</p>
+                    <p class="mb-0 text-secondary">info@greencart.vn</p>
+                </div>
+            </div>
+
+            <div class="contact-card d-flex gap-3 align-items-start p-4 mb-4">
+                <div class="icon-box">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                </div>
+                <div>
+                    <h5 class="mb-1 fw-bold">Giờ làm việc</h5>
+                    <p class="mb-0 text-secondary">Thứ 2 - Thứ 6: 8:00 - 18:00</p>
+                    <p class="mb-0 text-secondary">Thứ 7 - CN: 9:00 - 17:00</p>
+                </div>
+            </div>
+
+            <h4 class="fw-bold mb-3">Theo dõi chúng tôi</h4>
+            <div class="d-flex gap-3 mb-3">
+                <a href="#" class="social-box">F</a>
+                <a href="#" class="social-box">I</a>
+                <a href="#" class="social-box">T</a>
+                <a href="#" class="social-box">Y</a>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="form-panel rounded-4 p-4 p-md-5">
+                <h2 class="section-title fw-bold mb-4">Gửi tin nhắn</h2>
+
+                @if (TempData["ContactSuccess"] is string successMessage)
+                {
+                    <div class="alert alert-contact" role="alert">
+                        @successMessage
+                    </div>
+                }
+
+                <form method="post" asp-action="IndexContact" asp-controller="Home">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="Name" class="form-label fw-semibold">Họ và tên *</label>
+                            <input asp-for="Name" class="form-control form-control-lg" placeholder="Nhập họ và tên" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Phone" class="form-label fw-semibold">Số điện thoại</label>
+                            <input asp-for="Phone" class="form-control form-control-lg" placeholder="Nhập số điện thoại" />
+                            <span asp-validation-for="Phone" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label fw-semibold">Email *</label>
+                        <input asp-for="Email" class="form-control form-control-lg" placeholder="Nhập địa chỉ email" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Subject" class="form-label fw-semibold">Chủ đề</label>
+                        <select asp-for="Subject" class="form-select form-select-lg">
+                            <option value="">Chọn chủ đề</option>
+                            <option value="Hỗ trợ kỹ thuật">Hỗ trợ kỹ thuật</option>
+                            <option value="Vấn đề đơn hàng">Vấn đề đơn hàng</option>
+                            <option value="Thông tin sản phẩm">Thông tin sản phẩm</option>
+                            <option value="Hợp tác kinh doanh">Hợp tác kinh doanh</option>
+                        </select>
+                        <span asp-validation-for="Subject" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Message" class="form-label fw-semibold">Tin nhắn *</label>
+                        <textarea asp-for="Message" class="form-control" rows="6" placeholder="Nhập nội dung tin nhắn..."></textarea>
+                        <span asp-validation-for="Message" class="text-danger"></span>
+                    </div>
+
+                    <button type="submit" class="btn send-btn w-100 py-3 fw-semibold">Gửi tin nhắn</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="map-section rounded-4 p-4 p-md-5 mt-5 text-center">
+        <h3 class="fw-bold mb-3">Vị trí cửa hàng</h3>
+        <p class="text-secondary mb-4">Ghé thăm cửa hàng của chúng tôi để trải nghiệm sản phẩm trực tiếp</p>
+        <div class="map-frame rounded-4 overflow-hidden">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3918.2926427495986!2d106.6006639!3d10.865332099999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752b088de30f3b%3A0xd2140740d360f705!2zVHLGsOG7nW5nIMSQ4bqhaSBo4buNYyBOZ2_huqFpIG5n4buvIC0gVGluIGjhu41jIFRow6BuaCBwaOG7kSBI4buTIENow60gTWluaCAoSFVGTElUKSBDxqEgc-G7nyBIw7NjIE3DtG4!5e0!3m2!1svi!2s!4v1773481697728!5m2!1svi!2s" 
+                width="100%" 
+                height="350" 
+                style="border:0;" 
+                allowfullscreen="" 
+                loading="lazy" 
+                referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+        </div>
+    </div>
+</div>
+
+<style>
+    .contact-page {
+        color: #1f2a44;
+    }
+
+    .contact-hero,
+    .map-section {
+        background: #ffeaf3;
+    }
+
+    .hero-title {
+        font-size: clamp(2rem, 3.5vw, 4rem);
+        color: #1f2a44;
+    }
+
+    .hero-subtitle,
+    .section-desc {
+        color: #4f5f73;
+        font-size: 1.05rem;
+        line-height: 1.7;
+    }
+
+    .hero-line {
+        width: 100px;
+        height: 4px;
+        border-radius: 999px;
+        background: #FFB6D5;
+    }
+
+    .section-title {
+        color: #1f2a44;
+        font-size: 3rem;
+    }
+
+    .contact-card {
+        border: 1px solid #e3e8ee;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+    }
+
+    .icon-box {
+        width: 52px;
+        height: 52px;
+        min-width: 52px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #ffe4ef;
+        color: #ff69b4;
+    }
+
+    .social-box {
+        width: 52px;
+        height: 52px;
+        border-radius: 10px;
+        background: #ffe4ef;
+        color: #d63384;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        font-weight: 700;
+    }
+
+    .social-box:hover {
+        background: #ffb6d5;
+        color: #ffffff;
+    }
+
+    .form-panel {
+        background: #fff;
+        border: 1px solid #e3e8ee;
+        box-shadow: 0 8px 22px rgba(16, 24, 40, 0.08);
+    }
+
+    .form-control,
+    .form-select {
+        border: 1px solid #cfd7e3;
+        border-radius: 10px;
+        padding: 0.8rem 1rem;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #ff69b4;
+        box-shadow: 0 0 0 0.2rem rgba(255, 105, 180, 0.2);
+    }
+
+    .send-btn {
+        background: #ff69b4;
+        border: 1px solid #ff69b4;
+        color: #fff;
+        border-radius: 10px;
+        font-size: 1.75rem;
+    }
+
+    .send-btn:hover {
+        background: #ff1493;
+        border-color: #ff1493;
+        color: #fff;
+    }
+
+    .map-frame {
+        border: 1px solid #ffd1e6;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+    }
+
+    .alert-contact {
+        background: #ffe4ef;
+        border: 1px solid #ffeaf3;
+        color: #000000;
+    }
+
+    @@media (max-width: 991.98px) {
+        .section-title {
+            font-size: 2.25rem;
+        }
+
+        .send-btn {
+            font-size: 1.25rem;
+        }
+    }
+</style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

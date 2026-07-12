@@ -1,0 +1,93 @@
+@model SweetCakeShop.Models.ViewModels.ProductDetailsViewModel
+
+@{
+    ViewData["Title"] = Model.Product.ProductName;
+}
+
+<div class="container-fluid px-lg-5 mt-4">
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="border rounded overflow-hidden bg-white">
+                @if (!string.IsNullOrEmpty(Model.Product.Image))
+                {
+                    <img src="@Model.Product.Image" class="w-100" alt="@Model.Product.ProductName" style="max-height: 520px; object-fit: contain;" />
+                }
+                else
+                {
+                    <img src="~/images/no-image.png" class="w-100" alt="No Image" style="max-height: 520px; object-fit: contain;" />
+                }
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="mb-2 text-muted">
+                <a class="text-decoration-none text-muted" asp-controller="Home" asp-action="Index">Trang chủ</a>
+                <span class="mx-1">›</span>
+                <a class="text-decoration-none text-muted" asp-controller="Products" asp-action="IndexPro">Menu</a>
+                <span class="mx-1">›</span>
+                <span>@Model.Product.Category?.CategoryName</span>
+            </div>
+
+            <h2 class="fw-bold mb-3">@Model.Product.ProductName</h2>
+
+            <p class="text-muted mb-3">
+                @Model.Product.Description
+            </p>
+
+            <div class="mb-4">
+                <span class="text-success fw-bold fs-3">@Model.Product.Price.ToString("N0") đ</span>
+            </div>
+
+            <div class="d-flex align-items-center mb-4">
+                <label class="me-3 fw-semibold">Số lượng:</label>
+                <input id="product-qty" type="number" class="form-control" style="width: 120px;" min="1" value="1" />
+            </div>
+
+            <div class="d-flex gap-3">
+                <button class="btn btn-pink px-4 py-2" onclick="addToCartFromDetails(@Model.Product.ProductId)">
+                    Thêm vào giỏ hàng
+                </button>
+            
+            </div>
+        </div>
+    </div>
+
+@if (Model.SimilarProducts.Any())
+{
+    <div class="container-fluid px-lg-5 mt-5 mb-4">
+        <h4 class="fw-bold mb-3 text-center">Sản phẩm tương tự</h4>
+        <div class="row g-4">
+            @foreach (var product in Model.SimilarProducts)
+            {
+                <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                    <a class="text-decoration-none text-dark" asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId">
+                        <div class="card h-100 shadow-sm product-card">
+                            <div class="product-image-wrapper" style="height: 200px; overflow: hidden;">
+                                @if (!string.IsNullOrEmpty(product.Image))
+                                {
+                                    <img src="@product.Image" class="card-img-top" alt="@product.ProductName" style="height: 100%; object-fit: cover;">
+                                }
+                                else
+                                {
+                                    <img src="~/images/no-image.png" class="card-img-top" alt="No Image" style="height: 100%; object-fit: cover;">
+                                }
+                            </div>
+                            <div class="card-body text-center">
+                                <h6 class="card-title text-truncate mb-2">@product.ProductName</h6>
+                                <p class="mb-0 text-success fw-bold">@product.Price.ToString("N0") đ</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+}
+</div>
+
+<script>
+    function addToCartFromDetails(productId) {
+        const qtyInput = document.getElementById('product-qty');
+        const qty = qtyInput ? Math.max(1, parseInt(qtyInput.value || '1')) : 1;
+        addToCartAjax(productId, qty);
+    }
+</script>
