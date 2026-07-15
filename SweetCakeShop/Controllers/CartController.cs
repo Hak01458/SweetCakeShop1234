@@ -147,7 +147,7 @@ namespace SweetCakeShop.Controllers
 
             if (method == "COD")
             {
-                order.Status = "Confirmed"; // or "PendingPayment" as you prefer for COD
+                order.Status = "Pending"; // or "PendingPayment" as you prefer for COD
                 await _context.SaveChangesAsync();
                 // Thêm: tạo vận đơn GHN
                 var ghnCode = await _ghnService.CreateOrderAsync(order);
@@ -247,7 +247,7 @@ namespace SweetCakeShop.Controllers
 
                     if (session != null && session.PaymentStatus == "paid")
                     {
-                        order.Status = "Confirmed";
+                        order.Status = "Pending";
                         await _context.SaveChangesAsync();
                         // Thêm: tạo vận đơn GHN
                         var ghnCode = await _ghnService.CreateOrderAsync(order);

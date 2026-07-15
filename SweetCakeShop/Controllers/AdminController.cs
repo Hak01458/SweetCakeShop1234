@@ -232,7 +232,7 @@ namespace SweetCakeShop.Controllers
                 await _context.SaveChangesAsync();
                 await tx.CommitAsync();
 
-                TempData["Success"] = $"Đã làm bánh cho đơn #{order.OrderId} và cập nhật trạng thái Confirmed";
+                TempData["Success"] = $"Đã làm bánh cho đơn #{order.OrderId}";
             }
             catch
             {
