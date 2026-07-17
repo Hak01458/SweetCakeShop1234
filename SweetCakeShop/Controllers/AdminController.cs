@@ -85,7 +85,7 @@ namespace SweetCakeShop.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateOrderStatus(int orderId, string status)
         {
-            var validStatuses = new[] { "Pending", "Confirmed", "Shipped", "Delivered", "Cancelled" };
+            var validStatuses = new[] { "Pending", "Confirmed", "Baked", "Delivered", "Cancelled" };
             if (!validStatuses.Contains(status))
             {
                 TempData["Error"] = "Trạng thái không hợp lệ";
@@ -153,7 +153,7 @@ namespace SweetCakeShop.Controllers
             }
 
             // Không làm lại cho đơn đã xác nhận/giao/hủy
-            if (order.Status == "Confirmed" || order.Status == "Shipped" || order.Status == "Delivered" || order.Status == "Cancelled")
+            if (order.Status == "Baked" || order.Status == "Delivered" || order.Status == "Cancelled")
             {
                 TempData["Error"] = "Đơn hàng không ở trạng thái có thể làm bánh";
                 return RedirectToAction(nameof(OrderDetails), new { orderId });
@@ -227,7 +227,7 @@ namespace SweetCakeShop.Controllers
                     ingredient.Quantity = Math.Round(ingredient.Quantity - required, 2, MidpointRounding.AwayFromZero);
                 }
 
-                order.Status = "Confirmed";
+                order.Status = "Baked";
 
                 await _context.SaveChangesAsync();
                 await tx.CommitAsync();

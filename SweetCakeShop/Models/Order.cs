@@ -18,7 +18,7 @@ namespace SweetCakeShop.Models
 
         public DateTime OrderDate { get; set; } = DateTime.Now;
         public decimal TotalPrice { get; set; }
-        public string Status { get; set; } = "Pending";     // Pending, Confirmed, Shipped, Delivered, Cancelled
+        public string Status { get; set; } = "Pending";     // Pending, Confirmed, Baked, Delivered, Cancelled
 
         public IdentityUser? User { get; set; }           // nếu dùng Identity
         public ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();

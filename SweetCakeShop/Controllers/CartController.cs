@@ -170,8 +170,9 @@ namespace SweetCakeShop.Controllers
                 // Create Stripe Checkout Session via service (provides session.Url)
                 var payment = await _paymentService.CreatePaymentAsync(order, successUrl, cancelUrl);
 
-                // Mark order awaiting online payment
-                order.Status = "AwaitingPayment";
+                // If payment service reports success (Stripe session created or other gateway),
+                // set status to Confirmed. Otherwise mark Pending.
+                order.Status = payment.Success ? "Confirmed" : "Pending";
                 await _context.SaveChangesAsync();
 
                 if (!string.IsNullOrEmpty(payment.PaymentUrl))
@@ -223,7 +224,7 @@ namespace SweetCakeShop.Controllers
                 return NotFound();
 
             // mark as awaiting manual confirmation (you can change to Confirmed if you prefer)
-            order.Status = "AwaitingConfirmation";
+            order.Status = "Confirmed";
             await _context.SaveChangesAsync();
 
             return RedirectToAction("Success", new { orderId = order.OrderId });
@@ -247,7 +248,7 @@ namespace SweetCakeShop.Controllers
 
                     if (session != null && session.PaymentStatus == "paid")
                     {
-                        order.Status = "Pending";
+                        order.Status = "Confirmed";
                         await _context.SaveChangesAsync();
                         // Thêm: tạo vận đơn GHN
                         var ghnCode = await _ghnService.CreateOrderAsync(order);

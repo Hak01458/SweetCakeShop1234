@@ -21,7 +21,7 @@
     <h5 class="mb-0">Chi tiết đơn hàng</h5>
 
     <div class="d-flex gap-2">
-        @if (Model.Status == "Pending")
+        @if (Model.Status == "Pending" || Model.Status == "Confirmed")
         {
             <form asp-action="MakeCake" asp-controller="Admin" method="post" class="d-inline">
                 @Html.AntiForgeryToken()
