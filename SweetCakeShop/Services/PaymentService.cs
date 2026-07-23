@@ -57,8 +57,8 @@ namespace SweetCakeShop.Services
                                 UnitAmount = amount,
                                 ProductData = new SessionLineItemPriceDataProductDataOptions
                                 {
-                                    Name = $"Đơn hàng #{order.OrderId}",
-                                    Description = $"Thanh toán đơn hàng #{order.OrderId}"
+                                    Name = $"Đơn hàng {order.OrderId}",
+                                    Description = $"Thanh toán đơn hàng {order.OrderId}"
                                 }
                             },
                             Quantity = 1

@@ -128,7 +128,7 @@ namespace SweetCakeShop.Controllers
             _context.Orders.Remove(order);
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = $"Đã xóa đơn hàng #{orderId}";
+            TempData["Success"] = $"Đã xóa đơn hàng ";
             return RedirectToAction(nameof(Orders));
         }
 
