@@ -40,7 +40,10 @@
                            asp-controller="Admin" asp-action="TopSellingProducts">
                             Bánh bán chạy nhất
                         </a>
-                    </li>
+                        <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Revenue" ? "active fw-semibold" : "text-dark")"
+                           asp-controller="Admin" asp-action="Revenue">
+                            Thống kê doanh thu
+                        </a>
                 </ul>
             </aside>
 

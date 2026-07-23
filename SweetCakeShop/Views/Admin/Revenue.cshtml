@@ -1,0 +1,96 @@
+@model IEnumerable<SweetCakeShop.Models.Order>
+@{
+    Layout = "_AdminLayout";
+}
+
+<h2>Thống kê doanh thu</h2>
+
+<form method="get" class="row g-3 mb-3">
+    <div class="col-md-3">
+        <label class="form-label">Từ ngày</label>
+        <input type="date" name="startDate" class="form-control" value="@ViewBag.StartDate" />
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Đến ngày</label>
+        <input type="date" name="endDate" class="form-control" value="@ViewBag.EndDate" />
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Trạng thái</label>
+        <select name="status" class="form-select">
+            <option value="">Tất cả</option>
+            <option value="Baked" selected="@(ViewBag.FilterStatus == "Baked" ? "selected" : null)">Baked</option>
+            <option value="Delivered" selected="@(ViewBag.FilterStatus == "Delivered" ? "selected" : null)">Delivered</option>
+            <option value="Cancelled" selected="@(ViewBag.FilterStatus == "Cancelled" ? "selected" : null)">Cancelled</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Hình thức thanh toán</label>
+        <select name="payment" class="form-select">
+            <option value="">Tất cả</option>
+            <option value="COD" selected="@(ViewBag.FilterPayment == "COD" ? "selected" : null)">COD</option>
+            <option value="Online" selected="@(ViewBag.FilterPayment == "Online" ? "selected" : null)">Trực tuyến</option>
+        </select>
+    </div>
+    <div class="col-md-1 d-flex align-items-end">
+        <button class="btn btn-primary">Lọc</button>
+    </div>
+</form>
+
+<div class="mb-3">
+    <h5>Tổng doanh thu: <strong>@String.Format("{0:N0}", ViewBag.TotalRevenue ?? 0)</strong> VND</h5>
+    <h6>Tổng đơn hàng: <strong>@(ViewBag.TotalOrders ?? 0)</strong></h6>
+</div>
+
+<div class="mb-4">
+    <h5>Phân theo trạng thái</h5>
+    <table class="table table-sm table-bordered">
+        <thead>
+            <tr>
+                <th>Trạng thái</th>
+                <th>Đơn hàng</th>
+                <th>Doanh thu</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in (IEnumerable<dynamic>)ViewBag.ByStatus ?? new List<dynamic>())
+            {
+                <tr>
+                    <td>@row.Status</td>
+                    <td>@row.Count</td>
+                    <td>@String.Format("{0:N0}", row.Revenue) VND</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div>
+    <h5>Danh sách đơn hàng</h5>
+    <table class="table table-sm table-striped">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Ngày</th>
+                <th>Khách</th>
+                <th>Trạng thái</th>
+                <th>Hình thức</th>
+                <th class="text-end">Tổng</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var o in Model)
+            {
+                <tr>
+                    <td>@o.OrderId</td>
+                    <td>@o.OrderDate.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>@o.CustomerName</td>
+                    <td>@o.Status</td>
+                    <td>@(o.Status == "COD" ? "COD" : "Trực tuyến")</td>
+                    <td class="text-end">@String.Format("{0:N0}", o.TotalPrice) VND</td>
+                    <td><a class="btn btn-sm btn-outline-primary" href="@Url.Action("OrderDetails", "Admin", new { orderId = o.OrderId })">Xem</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -19,6 +19,52 @@ namespace SweetCakeShop.Controllers
             _env = env;
         }
 
+        // Revenue / Reports
+        [HttpGet]
+        public async Task<IActionResult> Revenue(DateTime? startDate, DateTime? endDate, string? status, string? payment)
+        {
+            // default range: last 30 days
+            var start = startDate ?? DateTime.Today.AddDays(-30);
+            var end = (endDate ?? DateTime.Today).Date.AddDays(1).AddTicks(-1);
+
+            var q = _context.Orders.AsNoTracking().Where(o => o.OrderDate >= start && o.OrderDate <= end);
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                q = q.Where(o => o.Status == status);
+            }
+
+            if (!string.IsNullOrWhiteSpace(payment))
+            {
+                if (payment == "COD")
+                    q = q.Where(o => o.Status == "COD");
+                else if (payment == "Online")
+                    q = q.Where(o => o.Status == "Confirmed" || o.Status == "Delivered" || o.Status == "Baked");
+            }
+
+            var orders = await q.OrderByDescending(o => o.OrderDate).ToListAsync();
+
+            // aggregates
+            var totalRevenue = orders.Sum(o => o.TotalPrice);
+            var totalOrders = orders.Count;
+
+            // breakdown by status
+            var byStatus = orders.GroupBy(o => o.Status)
+                .Select(g => new { Status = g.Key, Count = g.Count(), Revenue = g.Sum(x => x.TotalPrice) })
+                .OrderByDescending(x => x.Revenue)
+                .ToList();
+
+            ViewBag.StartDate = start.Date.ToString("yyyy-MM-dd");
+            ViewBag.EndDate = end.Date.ToString("yyyy-MM-dd");
+            ViewBag.FilterStatus = status ?? string.Empty;
+            ViewBag.FilterPayment = payment ?? string.Empty;
+            ViewBag.TotalRevenue = totalRevenue;
+            ViewBag.TotalOrders = totalOrders;
+            ViewBag.ByStatus = byStatus;
+
+            return View(orders);
+        }
+
         public IActionResult Dashboard()
         {
             return View();
