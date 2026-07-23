@@ -147,7 +147,7 @@ namespace SweetCakeShop.Controllers
 
             if (method == "COD")
             {
-                order.Status = "Pending"; // or "PendingPayment" as you prefer for COD
+                order.Status = "COD"; // or "CODPayment" as you prefer for COD
                 await _context.SaveChangesAsync();
                 // Thêm: tạo vận đơn GHN
                 var ghnCode = await _ghnService.CreateOrderAsync(order);
@@ -171,8 +171,8 @@ namespace SweetCakeShop.Controllers
                 var payment = await _paymentService.CreatePaymentAsync(order, successUrl, cancelUrl);
 
                 // If payment service reports success (Stripe session created or other gateway),
-                // set status to Confirmed. Otherwise mark Pending.
-                order.Status = payment.Success ? "Confirmed" : "Pending";
+                // set status to Confirmed. Otherwise mark COD.
+                order.Status = payment.Success ? "Confirmed" : "COD";
                 await _context.SaveChangesAsync();
 
                 if (!string.IsNullOrEmpty(payment.PaymentUrl))

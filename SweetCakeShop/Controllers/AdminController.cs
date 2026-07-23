@@ -85,7 +85,7 @@ namespace SweetCakeShop.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateOrderStatus(int orderId, string status)
         {
-            var validStatuses = new[] { "Pending", "Confirmed", "Baked", "Delivered", "Cancelled" };
+            var validStatuses = new[] { "COD", "Confirmed", "Baked", "Delivered", "Cancelled" };
             if (!validStatuses.Contains(status))
             {
                 TempData["Error"] = "Trạng thái không hợp lệ";

@@ -33,7 +33,7 @@ namespace SweetCakeShop.Services
                 IsGuest = string.IsNullOrEmpty(userId),
                 OrderDate = DateTime.UtcNow,
                 TotalPrice = cart.TotalAmount,
-                Status = "Pending"
+                Status = "COD"
             };
 
             _db.Orders.Add(order);

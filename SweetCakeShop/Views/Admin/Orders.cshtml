@@ -44,7 +44,7 @@
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="orderId" value="@order.OrderId" />
                                 <select name="status" class="form-select form-select-sm">
-                                    <option value="Pending" selected="@(order.Status == "Pending")">Pending</option>
+                                    <option value="COD" selected="@(order.Status == "COD")">COD</option>
                                     <option value="Confirmed" selected="@(order.Status == "Confirmed")">Confirmed</option>
                                     <option value="Baked" selected="@(order.Status == "Baked")">Baked</option>
                                     <option value="Delivered" selected="@(order.Status == "Delivered")">Delivered</option>
