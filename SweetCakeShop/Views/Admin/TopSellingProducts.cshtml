@@ -46,7 +46,7 @@
                             <td class="fw-semibold">@item.ProductName</td>
                             <td>@item.SoldQuantity</td>
                             <td>@item.TotalRevenue.ToString("N0") đ</td>
-                            <td>@item.ConfirmedOrderCount</td>
+                            <td>@item.DeliveredOrderCount</td>
                         </tr>
                     }
                 </tbody>
@@ -55,7 +55,7 @@
 
         @if (!Model.Any())
         {
-            <div class="text-muted">Chưa có dữ liệu đơn hàng ở trạng thái Confirmed.</div>
+            <div class="text-muted">Chưa có dữ liệu.</div>
         }
     </div>
 </div>

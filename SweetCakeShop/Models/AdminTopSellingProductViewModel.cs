@@ -7,6 +7,6 @@ namespace SweetCakeShop.Models
         public string ProductName { get; set; } = string.Empty;
         public int SoldQuantity { get; set; }
         public decimal TotalRevenue { get; set; }
-        public int ConfirmedOrderCount { get; set; }
+        public int DeliveredOrderCount { get; set; }
     }
 }

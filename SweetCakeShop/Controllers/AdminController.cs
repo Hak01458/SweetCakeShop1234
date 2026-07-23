@@ -31,7 +31,7 @@ namespace SweetCakeShop.Controllers
                 (from od in _context.OrderDetails.AsNoTracking()
                  join o in _context.Orders.AsNoTracking() on od.OrderId equals o.OrderId
                  join p in _context.Products.AsNoTracking() on od.ProductId equals p.ProductId
-                 where o.Status == "Confirmed" || o.Status == "confirmed"
+                 where o.Status == "Delivered" || o.Status == "delivered"
                  group new { od, o, p } by new { od.ProductId, p.ProductName } into g
                  orderby g.Sum(x => x.od.Quantity) descending, g.Key.ProductName
                  select new AdminTopSellingProductViewModel
@@ -40,7 +40,7 @@ namespace SweetCakeShop.Controllers
                      ProductName = g.Key.ProductName,
                      SoldQuantity = g.Sum(x => x.od.Quantity),
                      TotalRevenue = g.Sum(x => x.od.Quantity * x.od.Price),
-                     ConfirmedOrderCount = g.Select(x => x.o.OrderId).Distinct().Count()
+                     DeliveredOrderCount = g.Select(x => x.o.OrderId).Distinct().Count()
                  })
                 .ToListAsync();
 
