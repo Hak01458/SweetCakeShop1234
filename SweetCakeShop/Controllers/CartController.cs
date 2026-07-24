@@ -276,24 +276,26 @@ namespace SweetCakeShop.Controllers
             return View();
         }
         [HttpGet]
-        public async Task<IActionResult> GetProvinces()
+        public async Task<IActionResult> CalculateShippingFee(int districtId, string wardCode)
         {
-            var data = await _ghnService.GetProvincesAsync();
-            return Content(data, "application/json");  // ← Content() thay vì Json()
-        }
+            try
+            {
+                var fee = await _ghnService.CalculateFeeAsync(districtId, wardCode);
 
-        [HttpGet]
-        public async Task<IActionResult> GetDistricts(int provinceId)
-        {
-            var data = await _ghnService.GetDistrictsAsync(provinceId);
-            return Content(data, "application/json");
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetWards(int districtId)
-        {
-            var data = await _ghnService.GetWardsAsync(districtId);
-            return Content(data, "application/json");
+                return Ok(new
+                {
+                    success = true,
+                    shippingFee = fee
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
         }
     }
 }

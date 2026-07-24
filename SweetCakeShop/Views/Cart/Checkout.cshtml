@@ -32,21 +32,30 @@
                 <!-- THÊM VÀO ĐÂY -->
                 <div class="mb-3">
                     <label class="form-label">Tỉnh / Thành phố</label>
-                    <select id="province" asp-for="Province" class="form-control" required>
+
+                    <select asp-for="ProvinceId" id="province" class="form-control">
                         <option value="">-- Chọn tỉnh/thành --</option>
                     </select>
+
+                    <input type="hidden" asp-for="Province" id="provinceName" />
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Quận / Huyện</label>
-                    <select id="district" asp-for="District" class="form-control" required>
+
+                    <select asp-for="DistrictId" id="district" class="form-control">
                         <option value="">-- Chọn quận/huyện --</option>
                     </select>
+
+                    <input type="hidden" asp-for="District" id="districtName" />
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Phường / Xã</label>
-                    <select id="ward" asp-for="Ward" class="form-control" required>
+
+                    <select asp-for="WardCode" id="ward" class="form-control">
                         <option value="">-- Chọn phường/xã --</option>
                     </select>
+
+                    <input type="hidden" asp-for="Ward" id="wardName" />
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Phí giao hàng</label>
@@ -99,45 +108,170 @@
     <div id="toast-container"></div>
 </div>
 <script>
-// Load tỉnh/thành khi trang mở
-    fetch("/Cart/GetProvinces")
-        .then(r => r.json())
-        .then(data => {
-            const sel = document.getElementById("province");
-            data.forEach(p => {
-                sel.innerHTML += `<option value="${p.code}">${p.name}</option>`;
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const province = document.getElementById("province");
+        const district = document.getElementById("district");
+        const ward = document.getElementById("ward");
+
+        const provinceName = document.getElementById("provinceName");
+        const districtName = document.getElementById("districtName");
+        const wardName = document.getElementById("wardName");
+
+        // ==========================
+        // Load Province
+        // ==========================
+        fetch("/Address/Provinces")
+            .then(res => res.json())
+            .then(data => {
+
+                data.forEach(p => {
+
+                    const option = document.createElement("option");
+
+                    option.value = p.provinceID;
+                    option.text = p.provinceName;
+
+                    province.appendChild(option);
+
+                });
+
+            })
+            .catch(err => {
+                console.error(err);
+                showToast("Không tải được danh sách tỉnh/thành.", "danger");
             });
+
+        // ==========================
+        // Province Changed
+        // ==========================
+        province.addEventListener("change", function() {
+
+            provinceName.value = "";
+
+            districtName.value = "";
+
+            wardName.value = "";
+
+            district.innerHTML =
+                '<option value="">-- Chọn quận/huyện --</option>';
+
+            ward.innerHTML =
+                '<option value="">-- Chọn phường/xã --</option>';
+
+            if (!this.value)
+                return;
+
+            provinceName.value =
+                this.options[this.selectedIndex].text;
+
+            fetch(`/Address/Districts/${this.value}`)
+                .then(res => res.json())
+                .then(data => {
+
+                    data.forEach(d => {
+
+                        const option = document.createElement("option");
+
+                        option.value = d.districtID;
+                        option.text = d.districtName;
+
+                        district.appendChild(option);
+
+                    });
+
+                })
+                .catch(err => {
+
+                    console.error(err);
+
+                    showToast("Không tải được danh sách quận/huyện.", "danger");
+
+                });
+
         });
 
-    document.getElementById("province").addEventListener("change", function() {
-        const provinceCode = this.value;
-        document.getElementById("district").innerHTML = '<option value="">-- Chọn quận/huyện --</option>';
-        document.getElementById("ward").innerHTML = '<option value="">-- Chọn phường/xã --</option>';
-        if (!provinceCode) return;
+        // ==========================
+        // District Changed
+        // ==========================
+        district.addEventListener("change", function() {
 
-        fetch(`/Cart/GetDistricts?provinceId=${provinceCode}`)
-            .then(r => r.json())
-            .then(data => {
-                data.forEach(d => {
-                    document.getElementById("district").innerHTML +=
-                        `<option value="${d.code}">${d.name}</option>`;
+            districtName.value = "";
+
+            wardName.value = "";
+
+            ward.innerHTML =
+                '<option value="">-- Chọn phường/xã --</option>';
+
+            if (!this.value)
+                return;
+
+            districtName.value =
+                this.options[this.selectedIndex].text;
+
+            fetch(`/Address/Wards/${this.value}`)
+                .then(res => res.json())
+                .then(data => {
+
+                    data.forEach(w => {
+
+                        const option = document.createElement("option");
+
+                        option.value = w.wardCode;
+                        option.text = w.wardName;
+
+                        ward.appendChild(option);
+
+                    });
+
+                })
+                .catch(err => {
+
+                    console.error(err);
+
+                    showToast("Không tải được danh sách phường/xã.", "danger");
+
                 });
-            });
-    });
 
-    document.getElementById("district").addEventListener("change", function() {
-        const districtCode = this.value;
-        document.getElementById("ward").innerHTML = '<option value="">-- Chọn phường/xã --</option>';
-        if (!districtCode) return;
+        });
 
-        fetch(`/Cart/GetWards?districtId=${districtCode}`)
-            .then(r => r.json())
-            .then(data => {
-                data.forEach(w => {
-                    document.getElementById("ward").innerHTML +=
-                        `<option value="${w.code}">${w.name}</option>`;
+        // ==========================
+        // Ward Changed
+        // ==========================
+        ward.addEventListener("change", function() {
+
+            wardName.value = "";
+
+            if (!this.value)
+                return;
+
+            wardName.value = this.options[this.selectedIndex].text;
+
+            fetch(`/Cart/CalculateShippingFee?districtId=${district.value}&wardCode=${this.value}`)
+                .then(res => res.json())
+                .then(data => {
+
+                    if (!data.success) {
+                        showToast(data.message, "danger");
+                        return;
+                    }
+
+                    document.getElementById("shipping-fee-display").value =
+                        Number(data.shippingFee).toLocaleString("vi-VN") + " ₫";
+
+                    document.getElementById("shipping-fee-value").value =
+                        data.shippingFee;
+
+                })
+                .catch(err => {
+
+                    console.error(err);
+
+                    showToast("Không tính được phí giao hàng.", "danger");
+
                 });
-            });
+
+        });
     });
 </script>
 <script>
