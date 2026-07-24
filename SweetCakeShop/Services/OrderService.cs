@@ -26,13 +26,19 @@ namespace SweetCakeShop.Services
                 CustomerEmail = checkout.CustomerEmail ?? string.Empty,
                 CustomerPhone = checkout.CustomerPhone ?? string.Empty,
                 ShippingAddress = checkout.ShippingAddress ?? string.Empty,
+
                 Province = checkout.Province,
                 District = checkout.District,
                 Ward = checkout.Ward,
+
                 ShippingFee = checkout.ShippingFee,
+
                 IsGuest = string.IsNullOrEmpty(userId),
                 OrderDate = DateTime.UtcNow,
-                TotalPrice = cart.TotalAmount,
+
+                // Tổng tiền = Tiền hàng + Phí ship
+                TotalPrice = cart.TotalAmount + checkout.ShippingFee,
+
                 Status = "COD"
             };
 

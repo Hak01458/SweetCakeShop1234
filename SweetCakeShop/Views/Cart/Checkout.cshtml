@@ -95,8 +95,20 @@
                 </tbody>
                 <tfoot>
                     <tr>
-                        <td colspan="3" class="text-end fw-bold">Tổng cộng:</td>
-                        <td class="fw-bold">@cart.TotalAmount.ToString("N0") ₫</td>
+                        <td colspan="3" class="text-end">Tạm tính:</td>
+                        <td id="subtotal">@cart.TotalAmount.ToString("N0") ₫</td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="3" class="text-end">Phí giao hàng:</td>
+                        <td id="shipping-total">0 ₫</td>
+                    </tr>
+
+                    <tr class="table-success">
+                        <td colspan="3" class="text-end fw-bold">Tổng thanh toán:</td>
+                        <td class="fw-bold" id="grand-total">
+                            @cart.TotalAmount.ToString("N0") ₫
+                        </td>
                     </tr>
                 </tfoot>
             </table>
@@ -261,6 +273,13 @@
 
                     document.getElementById("shipping-fee-value").value =
                         data.shippingFee;
+                    const subtotal = @Html.Raw(cart.TotalAmount.ToString(System.Globalization.CultureInfo.InvariantCulture));
+
+                    document.getElementById("shipping-total").innerText =
+                        Number(data.shippingFee).toLocaleString("vi-VN") + " ₫";
+
+                    document.getElementById("grand-total").innerText =
+                        Number(subtotal + data.shippingFee).toLocaleString("vi-VN") + " ₫";
 
                 })
                 .catch(err => {
