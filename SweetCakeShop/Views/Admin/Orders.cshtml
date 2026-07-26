@@ -280,6 +280,34 @@
                         </div>
 
                         <div class="info-item mt-3">
+                                    @if (order.ExpectedDeliveryDate != null)
+                                    {
+                                        <div class="info-item mt-3">
+
+                                            <small class="text-muted">
+                                                Dự kiến giao
+                                            </small>
+
+                                            <div>
+                                                @order.ExpectedDeliveryDate.Value.ToString("dd/MM/yyyy")
+                                            </div>
+
+                                        </div>
+                                    }
+                                    @if (order.DeliveredDate != null)
+                                    {
+                                        <div class="info-item mt-3">
+
+                                            <small class="text-muted">
+                                                Đã giao lúc
+                                            </small>
+
+                                            <div class="text-success fw-bold">
+                                                @order.DeliveredDate.Value.ToString("dd/MM/yyyy HH:mm")
+                                            </div>
+
+                                        </div>
+                                    }
 
                             <small class="text-muted">
 
@@ -357,42 +385,50 @@
 
                             <div>
 
-                                @if(order.ShippingStatus=="ready_to_pick")
-                                {
-                                    <span class="badge bg-primary">
-                                        Chờ lấy hàng
-                                    </span>
-                                }
-                                else if(order.ShippingStatus=="picking")
-                                {
-                                    <span class="badge bg-warning text-dark">
-                                        Đang lấy
-                                    </span>
-                                }
-                                else if(order.ShippingStatus=="delivering")
-                                {
-                                    <span class="badge bg-info">
-                                        Đang giao
-                                    </span>
-                                }
-                                else if(order.ShippingStatus=="delivered")
-                                {
-                                    <span class="badge bg-success">
-                                        Hoàn thành
-                                    </span>
-                                }
-                                else if(order.ShippingStatus=="GHN_ERROR")
-                                {
-                                    <span class="badge bg-danger">
-                                        Lỗi GHN
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-secondary">
-                                        Chưa tạo đơn
-                                    </span>
-                                }
+                                        @switch (order.ShippingStatus)
+                                        {
+                                            case "ready_to_pick":
+                                                <span class="badge bg-secondary">
+                                                    📦 Chờ lấy hàng
+                                                </span>
+                                                break;
+
+                                            case "picking":
+                                                <span class="badge bg-warning text-dark">
+                                                    🚚 Đang lấy hàng
+                                                </span>
+                                                break;
+
+                                            case "transporting":
+                                                <span class="badge bg-info">
+                                                    🚛 Đang vận chuyển
+                                                </span>
+                                                break;
+
+                                            case "delivering":
+                                                <span class="badge bg-primary">
+                                                    🏠 Đang giao hàng
+                                                </span>
+                                                break;
+
+                                            case "delivered":
+                                                <span class="badge bg-success">
+                                                    ✅ Đã giao
+                                                </span>
+                                                break;
+
+                                            case "GHN_ERROR":
+                                                <span class="badge bg-danger">
+                                                    ❌ Lỗi GHN
+                                                </span>
+                                                break;
+
+                                            default:
+                                                <span class="badge bg-dark">
+                                                    Chưa tạo đơn
+                                                </span>
+                                                break;
+                                        }
 
                             </div>
 
@@ -424,6 +460,36 @@
 
                 @if (!string.IsNullOrWhiteSpace(order.GhnOrderCode))
                 {
+                            @if (order.ShippingStartTime != null &&
+             order.DeliverySimulationTime != null &&
+             order.Status != "Delivered")
+                            {
+                                var total = (order.DeliverySimulationTime.Value - order.ShippingStartTime.Value).TotalSeconds;
+                                var current = (DateTime.Now - order.ShippingStartTime.Value).TotalSeconds;
+
+                                var percent = (int)Math.Min(100,
+                                    Math.Max(0, current / total * 100));
+
+                                <div class="mt-3">
+
+                                    <small class="text-muted fw-bold">
+                                        Tiến độ giao hàng
+                                    </small>
+
+                                    <div class="progress mt-2" style="height:10px">
+
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                             style="width:@percent%">
+                                        </div>
+
+                                    </div>
+
+                                    <small class="text-muted">
+                                        @percent%
+                                    </small>
+
+                                </div>
+                            }
                     <div class="alert alert-light border">
 
                         <div class="fw-semibold">

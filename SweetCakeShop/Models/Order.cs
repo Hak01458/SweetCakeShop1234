@@ -93,5 +93,9 @@ namespace SweetCakeShop.Models
         public DateTime? ExpectedDeliveryDate { get; set; }
 
         public DateTime? DeliveredDate { get; set; }
+
+        public DateTime? ShippingStartTime { get; set; }
+
+        public DateTime? DeliverySimulationTime { get; set; }
     }
 }

@@ -149,12 +149,6 @@ namespace SweetCakeShop.Controllers
             {
                 order.Status = "COD"; // or "CODPayment" as you prefer for COD
                 await _context.SaveChangesAsync();
-                // Thêm: tạo vận đơn GHN
-                await _ghnService.CreateShippingOrderAsync(order);
-                Console.WriteLine(order.GhnOrderCode);
-                Console.WriteLine(order.TrackingUrl);
-
-                await _context.SaveChangesAsync();
                 return RedirectToAction("Success", new { orderId = order.OrderId });
             }
             else if (method == "Online")
@@ -252,7 +246,12 @@ namespace SweetCakeShop.Controllers
                         order.Status = "Confirmed";
                         await _context.SaveChangesAsync();
                         // Thêm: tạo vận đơn GHN
-                        await _ghnService.CreateShippingOrderAsync(order);
+                        if (session != null && session.PaymentStatus == "paid")
+                        {
+                            order.Status = "Confirmed";
+
+                            await _context.SaveChangesAsync();
+                        }
                         Console.WriteLine($"OrderDetails Count = {order.OrderDetails.Count}");
                         Console.WriteLine(order.GhnOrderCode);
                         Console.WriteLine(order.TrackingUrl);

@@ -45,7 +45,8 @@
                 });
                 builder.Services.AddHttpClient<GhnService>();
                 builder.Services.AddControllersWithViews();
-                builder.Services.AddRazorPages();
+            builder.Services.AddHostedService<OrderDeliveryBackgroundService>();
+            builder.Services.AddRazorPages();
 
                 // Session and cart registration
                 builder.Services.AddHttpContextAccessor();

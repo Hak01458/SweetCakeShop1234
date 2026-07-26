@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using SweetCakeShop.Constants;
 using SweetCakeShop.Data;
 using SweetCakeShop.Models;
+using SweetCakeShop.Services;
 
 namespace SweetCakeShop.Controllers
 {
@@ -12,11 +13,13 @@ namespace SweetCakeShop.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _env;
+        private readonly GhnService _ghnService;
 
-        public AdminController(ApplicationDbContext context, IWebHostEnvironment env)
+        public AdminController(ApplicationDbContext context, IWebHostEnvironment env, GhnService ghnService)
         {
             _context = context;
             _env = env;
+            _ghnService = ghnService;
         }
 
         // Revenue / Reports
@@ -274,7 +277,8 @@ namespace SweetCakeShop.Controllers
                 }
 
                 order.Status = "Baked";
-
+                await _context.SaveChangesAsync();
+                await _ghnService.CreateShippingOrderAsync(order);
                 await _context.SaveChangesAsync();
                 await tx.CommitAsync();
 

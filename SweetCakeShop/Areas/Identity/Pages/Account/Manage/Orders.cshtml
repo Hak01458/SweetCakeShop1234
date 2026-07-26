@@ -38,6 +38,7 @@
         foreach (var order in Model.Orders)
         {
 
+
             <div class="card order-card mb-5">
 
                 <!-- HEADER -->
@@ -187,80 +188,112 @@
                             </div>
 
                         </div>
-
+                        
                         <!-- TIMELINE -->
 
-                        <div class="timeline mb-5">
+                        <div class="shipping-timeline mb-5">
+                            @{
+                                int currentStep = 1;
 
-                            <div class="step active">
+                                switch (order.ShippingStatus)
+                                {
+                                    case "ready_to_pick":
+                                        currentStep = 2;
+                                        break;
 
+                                    case "picking":
+                                        currentStep = 3;
+                                        break;
+
+                                    case "transporting":
+                                    case "delivering":
+                                        currentStep = 4;
+                                        break;
+
+                                    case "delivered":
+                                        currentStep = 5;
+                                        break;
+                                }
+                            }
+
+                            <div class="timeline-item @(currentStep >= 1 ? "completed" : "")">
                                 <div class="circle">
-
                                     <i class="bi bi-cart-check"></i>
-
                                 </div>
-
                                 <span>Đặt hàng</span>
-
                             </div>
 
-                            <div class="line"></div>
+                            <div class="timeline-line @(currentStep >= 2 ? "completed" : "")"></div>
 
-                            <div class="step active">
-
+                            <div class="timeline-item @(currentStep >= 2 ? "completed" : "")">
                                 <div class="circle">
-
                                     <i class="bi bi-credit-card"></i>
-
                                 </div>
-
                                 <span>Thanh toán</span>
-
                             </div>
 
-                            <div class="line"></div>
+                            <div class="timeline-line @(currentStep >= 3 ? "completed" : "")"></div>
 
-                            <div class="step active">
-
+                            <div class="timeline-item @(currentStep >= 3 ? "completed" : "")">
                                 <div class="circle">
-
                                     <i class="bi bi-box-seam"></i>
-
                                 </div>
-
                                 <span>GHN tiếp nhận</span>
-
                             </div>
 
-                            <div class="line"></div>
+                            <div class="timeline-line @(currentStep >= 4 ? "completed" : "")"></div>
 
-                            <div class="step">
-
+                            <div class="timeline-item @(currentStep >= 4 ? "completed" : "")">
                                 <div class="circle">
-
                                     <i class="bi bi-truck"></i>
-
                                 </div>
-
                                 <span>Đang giao</span>
-
                             </div>
 
-                            <div class="line"></div>
+                            <div class="timeline-line @(currentStep >= 5 ? "completed" : "")"></div>
 
-                            <div class="step">
-
+                            <div class="timeline-item @(currentStep >= 5 ? "completed" : "")">
                                 <div class="circle">
-
                                     <i class="bi bi-house-check"></i>
-
                                 </div>
-
                                 <span>Hoàn tất</span>
-
                             </div>
 
                         </div>
+                        @if (order.ShippingStartTime != null &&
+     order.DeliverySimulationTime != null &&
+     order.Status != "Delivered")
+                        {
+                            var totalSeconds =
+                                (order.DeliverySimulationTime.Value - order.ShippingStartTime.Value).TotalSeconds;
+
+                            var currentSeconds =
+                                (DateTime.Now - order.ShippingStartTime.Value).TotalSeconds;
+
+                            var percent =
+                                (int)Math.Min(100,
+                                    Math.Max(0, currentSeconds / totalSeconds * 100));
+
+                            <div class="mt-4">
+
+                                <div class="d-flex justify-content-between">
+
+                                    <strong>Tiến độ giao hàng</strong>
+
+                                    <strong>@percent%</strong>
+
+                                </div>
+
+                                <div class="progress mt-2" style="height:12px">
+
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                                         style="width:@percent%">
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        }
 
                     }
 
@@ -403,6 +436,35 @@
         justify-content: space-between;
     }
 
+    .shipping-timeline {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 30px;
+    }
+
+    .timeline-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 120px;
+        text-align: center;
+    }
+
+        .timeline-item span {
+            margin-top: 10px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+    .timeline-line {
+        flex: 1;
+        height: 5px;
+        background: #ddd;
+        border-radius: 20px;
+    }
+
+
     .step {
         display: flex;
         flex-direction: column;
@@ -410,16 +472,33 @@
         width: 110px;
     }
 
+    .completed .circle {
+        background: #28a745;
+    }
+
+    .timeline-line.completed {
+        background: #28a745;
+    }
+
+    .progress {
+        border-radius: 30px;
+    }
+
+    .progress-bar {
+        border-radius: 30px;
+    }
+
     .circle {
-        width: 45px;
-        height: 45px;
+        width: 52px;
+        height: 52px;
         border-radius: 50%;
         background: #d6d6d6;
         display: flex;
         justify-content: center;
         align-items: center;
         color: white;
-        font-size: 18px;
+        font-size: 22px;
+        transition: .3s;
     }
 
     .active .circle {

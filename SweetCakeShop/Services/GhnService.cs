@@ -261,6 +261,20 @@ public class GhnService
 
             order.GhnOrderCode = orderCode;
             order.ExpectedDeliveryDate = leadTime;
+
+            if (leadTime.HasValue)
+            {
+                var deliveryDays = (leadTime.Value.Date - DateTime.Now.Date).Days;
+
+                if (deliveryDays <= 0)
+                    deliveryDays = 1;
+
+                order.ShippingStartTime = DateTime.Now;
+
+                // 1 phút = 1 ngày
+                order.DeliverySimulationTime =
+                    DateTime.Now.AddMinutes(deliveryDays);
+            }
             order.TrackingUrl = $"https://donhang.ghn.vn/?order_code={orderCode}";
             order.ShippingStatus = "ready_to_pick";
         }
