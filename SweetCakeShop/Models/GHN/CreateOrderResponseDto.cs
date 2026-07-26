@@ -1,9 +1,13 @@
-﻿namespace SweetCakeShop.Models.GHN
+﻿using System.Text.Json.Serialization;
+
+namespace SweetCakeShop.Models.GHN
 {
     public class CreateOrderResponseDto
     {
-        public string OrderCode { get; set; } = "";
+        [JsonPropertyName("order_code")]
+        public string? OrderCode { get; set; }
 
-        public string SortCode { get; set; } = "";
+        [JsonPropertyName("sort_code")]
+        public string? SortCode { get; set; }
     }
 }

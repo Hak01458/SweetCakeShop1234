@@ -150,13 +150,11 @@ namespace SweetCakeShop.Controllers
                 order.Status = "COD"; // or "CODPayment" as you prefer for COD
                 await _context.SaveChangesAsync();
                 // Thêm: tạo vận đơn GHN
-                var ghnCode = await _ghnService.CreateOrderAsync(order);
-                if (ghnCode != null)
-                {
-                    order.GhnOrderCode = ghnCode;
-                    order.TrackingUrl = $"https://donhang.ghn.vn/?order_code={ghnCode}";
-                    await _context.SaveChangesAsync();
-                }
+                await _ghnService.CreateShippingOrderAsync(order);
+                Console.WriteLine(order.GhnOrderCode);
+                Console.WriteLine(order.TrackingUrl);
+
+                await _context.SaveChangesAsync();
                 return RedirectToAction("Success", new { orderId = order.OrderId });
             }
             else if (method == "Online")
@@ -234,7 +232,10 @@ namespace SweetCakeShop.Controllers
         [HttpGet]
         public async Task<IActionResult> Success(int orderId, string? session_id)
         {
-            var order = await _context.Orders.FirstOrDefaultAsync(o => o.OrderId == orderId);
+            var order = await _context.Orders
+            .Include(o => o.OrderDetails)
+            .FirstOrDefaultAsync(o => o.OrderId == orderId);
+
             if (order == null)
                 return NotFound();
 
@@ -251,13 +252,11 @@ namespace SweetCakeShop.Controllers
                         order.Status = "Confirmed";
                         await _context.SaveChangesAsync();
                         // Thêm: tạo vận đơn GHN
-                        var ghnCode = await _ghnService.CreateOrderAsync(order);
-                        if (ghnCode != null)
-                        {
-                            order.GhnOrderCode = ghnCode;
-                            order.TrackingUrl = $"https://donhang.ghn.vn/?order_code={ghnCode}";
-                            await _context.SaveChangesAsync();
-                        }
+                        await _ghnService.CreateShippingOrderAsync(order);
+                        Console.WriteLine($"OrderDetails Count = {order.OrderDetails.Count}");
+                        Console.WriteLine(order.GhnOrderCode);
+                        Console.WriteLine(order.TrackingUrl);
+                        await _context.SaveChangesAsync();
                     }
                     else
                     {
@@ -272,8 +271,7 @@ namespace SweetCakeShop.Controllers
                 }
             }
 
-            ViewData["OrderId"] = orderId;
-            return View();
+            return View(order);
         }
         [HttpGet]
         public async Task<IActionResult> CalculateShippingFee(int districtId, string wardCode)
@@ -296,6 +294,44 @@ namespace SweetCakeShop.Controllers
                     message = ex.Message
                 });
             }
+        }
+        [HttpGet]
+        public async Task<IActionResult> TestLeadTime(int districtId, string wardCode)
+        {
+            try
+            {
+                var leadTime = await _ghnService.GetLeadTimeAsync(districtId, wardCode);
+
+                return Ok(new
+                {
+                    success = true,
+                    leadTime = leadTime
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+        [HttpGet]
+        public async Task<IActionResult> TestDistricts()
+        {
+            // ProvinceID của Hồ Chí Minh
+            var districts = await _ghnService.GetDistrictsAsync(202);
+
+            return Ok(districts);
+        }
+        [HttpGet]
+        public async Task<IActionResult> TestWards()
+        {
+            // Quận Tân Bình
+            var wards = await _ghnService.GetWardsAsync(1455);
+
+            return Ok(wards);
         }
     }
 }

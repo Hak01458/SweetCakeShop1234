@@ -90,5 +90,8 @@ namespace SweetCakeShop.Models
         /// Trạng thái GHN
         /// </summary>
         public string? ShippingStatus { get; set; }
+        public DateTime? ExpectedDeliveryDate { get; set; }
+
+        public DateTime? DeliveredDate { get; set; }
     }
 }
