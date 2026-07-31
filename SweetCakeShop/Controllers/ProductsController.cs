@@ -85,11 +85,24 @@ namespace SweetCakeShop.Controllers
                 .OrderBy(p => p.ProductId)
                 .Take(6)
                 .ToListAsync();
+            var reviews = await _context.ProductReviews
+                .Include(r => r.User)
+                .Where(r => r.ProductId == id)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
 
             var model = new ProductDetailsViewModel
             {
                 Product = product,
-                SimilarProducts = similarProducts
+                SimilarProducts = similarProducts,
+
+                Reviews = reviews,
+
+                TotalReviews = reviews.Count,
+
+                AverageRating = reviews.Any()
+        ? Math.Round(reviews.Average(r => r.Rating), 1)
+        : 0
             };
 
             return View(model);

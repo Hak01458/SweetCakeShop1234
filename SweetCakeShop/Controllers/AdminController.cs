@@ -147,6 +147,18 @@ namespace SweetCakeShop.Controllers
                 TempData["Error"] = "Không tìm thấy đơn hàng";
                 return RedirectToAction(nameof(Orders));
             }
+            // Đơn đã giao thì không được thay đổi nữa
+            if (order.Status == "Delivered")
+            {
+                TempData["Error"] = "Đơn hàng đã được giao, không thể chuyển trạng thái.";
+                return RedirectToAction(nameof(Orders));
+            }
+
+            if (order.Status == "Cancelled")
+            {
+                TempData["Error"] = "Đơn hàng đã bị hủy, không thể chuyển trạng thái.";
+                return RedirectToAction(nameof(Orders));
+            }
 
             order.Status = status;
             if (status == "Delivered")
@@ -163,6 +175,8 @@ namespace SweetCakeShop.Controllers
             TempData["Success"] = $"Đã cập nhật trạng thái đơn #{order.OrderId}";
             return RedirectToAction(nameof(Orders));
         }
+
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]

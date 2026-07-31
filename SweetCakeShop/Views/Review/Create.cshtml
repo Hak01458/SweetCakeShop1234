@@ -1,0 +1,130 @@
+﻿@model SweetCakeShop.Models.ProductReview
+
+@{
+    ViewData["Title"] = "Đánh giá sản phẩm";
+}
+
+<div class="container mt-5">
+
+    <div class="card shadow">
+
+        <div class="card-header bg-danger text-white">
+
+            <h3>Đánh giá sản phẩm</h3>
+
+        </div>
+
+        <div class="card-body">
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger mb-3">
+            </div>
+            <form asp-action="Create" method="post">
+
+                <input asp-for="ProductId" type="hidden" />
+                <input asp-for="OrderId" type="hidden" />
+
+                <div class="mb-4">
+
+                    <label class="form-label fw-bold">
+
+                        Đánh giá của bạn
+
+                    </label>
+
+                    <input asp-for="Rating" type="hidden" id="Rating" />
+
+                    <div id="starRating">
+
+                        <i class="bi bi-star-fill star" data-value="1"></i>
+                        <i class="bi bi-star-fill star" data-value="2"></i>
+                        <i class="bi bi-star-fill star" data-value="3"></i>
+                        <i class="bi bi-star-fill star" data-value="4"></i>
+                        <i class="bi bi-star-fill star" data-value="5"></i>
+
+                    </div>
+
+                    <span asp-validation-for="Rating" class="text-danger"></span>
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+
+                        Bình luận
+
+                    </label>
+
+                    <textarea asp-for="Comment"
+                              class="form-control"
+                              rows="5">
+
+                    </textarea>
+
+                </div>
+
+                <button class="btn btn-danger">
+
+                    Gửi đánh giá
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+<style>
+
+    .star {
+        font-size: 40px;
+        color: #ddd;
+        cursor: pointer;
+        transition: .2s;
+        margin-right: 5px;
+    }
+
+        .star.active {
+            color: #ffc107;
+        }
+
+        .star:hover {
+            transform: scale(1.15);
+        }
+
+</style>
+@section Scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+
+        const stars = document.querySelectorAll(".star");
+        const rating = document.getElementById("Rating");
+
+        stars.forEach(star => {
+
+            star.addEventListener("click", function() {
+
+                let value = this.dataset.value;
+
+                rating.value = value;
+
+                stars.forEach(s => {
+
+                    if (s.dataset.value <= value)
+                        s.classList.add("active");
+                    else
+                        s.classList.remove("active");
+
+                });
+
+            });
+
+        });
+
+    </script>
+
+}

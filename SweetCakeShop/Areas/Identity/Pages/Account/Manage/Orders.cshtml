@@ -13,6 +13,19 @@
         <i class="bi bi-bag-heart-fill"></i>
         LỊCH SỬ MUA HÀNG
     </h2>
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["Success"]
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["Error"]
+        </div>
+    }
 
     @if (!Model.Orders.Any())
     {
@@ -68,16 +81,34 @@
                         <div class="col-md-4 text-md-end mt-3 mt-md-0">
 
                             <span class="badge rounded-pill bg-danger px-3 py-2">
-
                                 @order.Status
-
                             </span>
 
                             <h4 class="mt-2 text-danger fw-bold">
-
                                 @order.TotalPrice.ToString("C0", new CultureInfo("vi-VN"))
-
                             </h4>
+
+                            @if (order.Status == "COD" || order.Status == "Confirmed")
+                            {
+                                <form method="post"
+                                      asp-page-handler="Cancel"
+                                      class="mt-2">
+
+                                    <input type="hidden"
+                                           name="orderId"
+                                           value="@order.OrderId" />
+
+                                    <button type="submit"
+                                            class="btn btn-outline-danger btn-sm"
+                                            onclick="return confirm('Bạn có chắc muốn hủy đơn hàng này không?');">
+
+                                        <i class="bi bi-x-circle"></i>
+                                        Hủy đơn
+
+                                    </button>
+
+                                </form>
+                            }
 
                         </div>
 
@@ -182,6 +213,7 @@
                                         Theo dõi GHN
 
                                     </a>
+                                    
 
                                 </div>
 
@@ -344,6 +376,42 @@
                                                         @(d.Product?.ProductName ?? "(Đã xóa)")
 
                                                     </strong>
+                                                    @if (order.Status == "Delivered")
+                                                    {
+                                                        var reviewed = Model.Reviews.Any(r =>
+                                                            r.ProductId == d.ProductId &&
+                                                            r.OrderId == order.OrderId);
+
+                                                        if (!reviewed)
+                                                        {
+                                                            <div class="mt-2">
+
+                                                                <a asp-controller="Review"
+                                                                   asp-action="Create"
+                                                                   asp-route-productId="@d.ProductId"
+                                                                   asp-route-orderId="@order.OrderId"
+                                                                   class="btn btn-outline-warning btn-sm">
+
+                                                                    ⭐ Đánh giá
+
+                                                                </a>
+
+                                                            </div>
+                                                        }
+                                                        else
+                                                        {
+                                                            <div class="mt-2">
+
+                                                                <button class="btn btn-success btn-sm"
+                                                                        disabled>
+
+                                                                    ✓ Đã đánh giá
+
+                                                                </button>
+
+                                                            </div>
+                                                        }
+                                                    }
 
                                                 </div>
 
