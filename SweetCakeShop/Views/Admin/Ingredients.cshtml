@@ -27,6 +27,14 @@
                             <label class="form-label">Đơn vị đo</label>
                             <input type="text" name="measurement" class="form-control" maxlength="30" placeholder="g, ml, quả..." required />
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label">Ngày nhập</label>
+                            <input type="date" name="importDate" class="form-control" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Ngày hết hạn</label>
+                            <input type="date" name="expiryDate" class="form-control" />
+                        </div>
                         <button type="submit" class="btn btn-primary w-100">Thêm mới</button>
                     </form>
                 </div>
@@ -40,6 +48,25 @@
                     <span class="badge text-bg-secondary">@Model.Count()</span>
                 </div>
                 <div class="card-body">
+                    @{
+                        var expiredCount = Model.Count(i => i.ExpiryDate.HasValue && i.ExpiryDate.Value.Date < DateTime.Today);
+                        var nearExpiryCount = Model.Count(i => i.ExpiryDate.HasValue
+                            && i.ExpiryDate.Value.Date >= DateTime.Today
+                            && i.ExpiryDate.Value.Date <= DateTime.Today.AddDays(7));
+                    }
+
+                    @if (expiredCount > 0)
+                    {
+                        <div class="alert alert-danger py-2 mb-3">
+                            ⚠️ Có <strong>@expiredCount</strong> nguyên liệu đã hết hạn sử dụng!
+                        </div>
+                    }
+                    @if (nearExpiryCount > 0)
+                    {
+                        <div class="alert alert-warning py-2 mb-3">
+                            ⏳ Có <strong>@nearExpiryCount</strong> nguyên liệu sắp hết hạn trong 7 ngày tới.
+                        </div>
+                    }
                     @if (TempData["Success"] is string success)
                     {
                         <div class="alert alert-success py-2">@success</div>
@@ -59,6 +86,8 @@
                                     <th style="width: 110px;">Đơn vị</th>
                                     <th style="width: 110px;">Thêm</th>
                                     <th style="width: 110px;">Trừ</th>
+                                    <th style="width: 130px;">Ngày nhập</th>
+                                    <th style="width: 130px;">Hạn sử dụng</th>
                                     <th class="text-end" style="width: 180px;">Thao tác</th>
                                 </tr>
                             </thead>
@@ -66,6 +95,18 @@
                                 @foreach (var item in Model)
                                 {
                                     stt++;
+                                    var rowClass = "";
+                                    if (item.ExpiryDate.HasValue)
+                                    {
+                                        if (item.ExpiryDate.Value.Date < DateTime.Today)
+                                            rowClass = "table-danger";
+                                        else if (item.ExpiryDate.Value.Date <= DateTime.Today.AddDays(7))
+                                            rowClass = "table-warning";
+                                    }
+
+                                    <tr class="@rowClass">
+                                        ...
+                                    </tr>
                                     <tr>
                                         <td>@stt</td>
                                         <td>
@@ -82,6 +123,33 @@
                                         </td>
                                         <td>
                                             <input type="number" name="subtractAmount" value="0" min="0" step="0.01" class="form-control form-control-sm decimal-2" lang="en-US" form="edit-@item.IngredientID" />
+                                        </td>
+                                        <td>
+                                            <input type="date" name="importDate"
+                                                   value="@(item.ImportDate?.ToString("yyyy-MM-dd"))"
+                                                   class="form-control form-control-sm" form="edit-@item.IngredientID" />
+                                        </td>
+                                        <td>
+                                            @{
+                                                var isExpired = item.ExpiryDate.HasValue && item.ExpiryDate.Value.Date < DateTime.Today;
+                                                var isNearExpiry = item.ExpiryDate.HasValue && !isExpired
+                                                    && item.ExpiryDate.Value.Date <= DateTime.Today.AddDays(7);
+                                            }
+                                            <input type="date" name="expiryDate"
+                                                   value="@(item.ExpiryDate?.ToString("yyyy-MM-dd"))"
+                                                   class="form-control form-control-sm" form="edit-@item.IngredientID" />
+                                            @if (item.ExpiryDate.HasValue)
+                                            {
+                                                var daysLeft = (item.ExpiryDate.Value.Date - DateTime.Today).Days;
+                                                if (daysLeft < 0)
+                                                {
+                                                    <span class="badge bg-danger mt-1">Đã hết hạn</span>
+                                                }
+                                                else if (daysLeft <= 7)
+                                                {
+                                                    <span class="badge bg-warning text-dark mt-1">Còn @daysLeft ngày</span>
+                                                }
+                                            }
                                         </td>
                                         <td class="text-end">
                                             <form id="edit-@item.IngredientID" asp-action="UpdateIngredient" asp-controller="Admin" method="post" class="d-inline">

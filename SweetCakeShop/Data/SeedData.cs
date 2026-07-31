@@ -17,7 +17,7 @@ namespace SweetCakeShop.Data
             Console.WriteLine("Bắt đầu seed dữ liệu mới...");
 
             var categories = new Category[]
-            {   
+            {
                 new Category { CategoryName = "Bánh kem" },
                 new Category { CategoryName = "Bánh bông lan" },
                 new Category { CategoryName = "Bánh quy" },

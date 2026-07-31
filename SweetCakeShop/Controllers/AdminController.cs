@@ -392,7 +392,9 @@ namespace SweetCakeShop.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateIngredient(string name, decimal quantity, string measurement)
+        public async Task<IActionResult> CreateIngredient(
+            string name, decimal quantity, string measurement,
+            DateTime? importDate, DateTime? expiryDate)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -412,12 +414,30 @@ namespace SweetCakeShop.Controllers
                 return RedirectToAction(nameof(Ingredients));
             }
 
-            var exists = await _context.Ingredients
-                .AnyAsync(i => i.Name == name.Trim());
-
-            if (exists)
+            if (importDate.HasValue && expiryDate.HasValue && expiryDate <= importDate)
             {
-                TempData["Error"] = "Nguyên liệu đã tồn tại";
+                TempData["Error"] = "Ngày hết hạn phải sau ngày nhập";
+                return RedirectToAction(nameof(Ingredients));
+            }
+
+            var existing = await _context.Ingredients
+                .FirstOrDefaultAsync(i => i.Name == name.Trim());
+
+            if (existing != null)
+            {
+                // Nguyên liệu đã có sẵn => coi đây là một đợt nhập hàng mới, cộng dồn số lượng
+                if (!string.Equals(existing.Measurement, measurement.Trim(), StringComparison.OrdinalIgnoreCase))
+                {
+                    TempData["Error"] = $"Nguyên liệu \"{existing.Name}\" đã tồn tại với đơn vị đo {existing.Measurement}";
+                    return RedirectToAction(nameof(Ingredients));
+                }
+
+                existing.Quantity = Math.Round(existing.Quantity + quantity, 2, MidpointRounding.AwayFromZero);
+                existing.ImportDate = importDate ?? existing.ImportDate;
+                existing.ExpiryDate = expiryDate ?? existing.ExpiryDate;
+
+                await _context.SaveChangesAsync();
+                TempData["Success"] = $"Đã cộng dồn {quantity} {measurement} vào tồn kho \"{existing.Name}\"";
                 return RedirectToAction(nameof(Ingredients));
             }
 
@@ -425,7 +445,9 @@ namespace SweetCakeShop.Controllers
             {
                 Name = name.Trim(),
                 Quantity = quantity,
-                Measurement = measurement.Trim()
+                Measurement = measurement.Trim(),
+                ImportDate = importDate,
+                ExpiryDate = expiryDate
             });
 
             await _context.SaveChangesAsync();
@@ -440,7 +462,9 @@ namespace SweetCakeShop.Controllers
             string name,
             string measurement,
             decimal addAmount = 0,
-            decimal subtractAmount = 0)
+            decimal subtractAmount = 0,
+            DateTime? importDate = null, 
+            DateTime? expiryDate = null)
         {
             var ingredient = await _context.Ingredients.FindAsync(ingredientId);
             if (ingredient == null)
@@ -480,6 +504,8 @@ namespace SweetCakeShop.Controllers
             ingredient.Name = name.Trim();
             ingredient.Measurement = measurement.Trim();
             ingredient.Quantity = Math.Round(newQuantity, 2, MidpointRounding.AwayFromZero);
+            ingredient.ImportDate = importDate;
+            ingredient.ExpiryDate = expiryDate;
 
             await _context.SaveChangesAsync();
             TempData["Success"] = "Cập nhật nguyên liệu thành công";

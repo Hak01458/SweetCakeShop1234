@@ -53,6 +53,7 @@ namespace SweetCakeShop
                 options.Cookie.IsEssential = true;
             });
             builder.Services.AddScoped<CartService>();
+            builder.Services.AddHostedService<ExpiredIngredientCleanupService>();
             builder.Services.AddScoped<OrderService>();
 
             // Payment service registration (DI). Keep HttpClient for backward compatibility
