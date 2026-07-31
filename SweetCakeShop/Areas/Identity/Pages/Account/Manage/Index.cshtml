@@ -7,7 +7,69 @@
 
 <h3 class="mb-3" style="color: #ad1457; font-weight: bold;">@ViewData["Title"]</h3>
 <partial name="_StatusMessage" for="StatusMessage" />
+@if (Model.IsVip)
+{
+    <div class="card border-warning shadow-sm mb-4"
+         style="border-radius:16px;">
 
+        <div class="card-body text-center">
+
+            <div style="font-size:45px;">👑</div>
+
+            <h3 class="text-warning fw-bold">
+                THÀNH VIÊN VIP
+            </h3>
+
+            <p class="mb-1">
+                Bạn đã hoàn thành
+                <strong>@Model.DeliveredOrderCount</strong>
+                đơn hàng.
+            </p>
+
+            <p class="text-success fw-bold mb-0">
+                Ưu đãi: giảm 10% tiền sản phẩm
+            </p>
+
+        </div>
+    </div>
+}
+else
+{
+    <div class="card border-0 shadow-sm mb-4"
+         style="border-radius:16px;">
+
+        <div class="card-body">
+
+            <h5 class="fw-bold" style="color:#d81b60;">
+                Chương trình khách hàng thân thiết
+            </h5>
+
+            <p>
+                Đã hoàn thành:
+                <strong>@Model.DeliveredOrderCount/5</strong>
+                đơn hàng
+            </p>
+
+            <div class="progress mb-2" style="height:20px;">
+
+                <div class="progress-bar bg-warning"
+                     role="progressbar"
+                     style="width:@Model.VipProgressPercent%">
+
+                    @Model.VipProgressPercent%
+
+                </div>
+
+            </div>
+
+            <small class="text-muted">
+                Cần thêm @Model.RemainingOrders đơn đã giao
+                để trở thành VIP.
+            </small>
+
+        </div>
+    </div>
+}
 <div class="row">
     <div class="col-md-8">
         <form id="profile-form" method="post">

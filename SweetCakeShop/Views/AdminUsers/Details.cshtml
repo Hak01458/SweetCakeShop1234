@@ -1,0 +1,215 @@
+﻿@model SweetCakeShop.Models.ViewModels.AdminUserDetailsViewModel
+
+@{
+    ViewData["Title"] = "Chi tiết người dùng";
+    Layout = "_AdminLayout";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <a asp-controller="AdminUsers"
+           asp-action="Index"
+           class="text-decoration-none">
+            <i class="bi bi-arrow-left me-1"></i>Quay lại danh sách
+        </a>
+        <h2 class="mt-2 mb-1">Chi tiết người dùng</h2>
+        <p class="text-muted mb-0">@Model.Email</p>
+    </div>
+
+    <a asp-controller="AdminUsers"
+       asp-action="Edit"
+       asp-route-id="@Model.Id"
+       class="btn btn-primary">
+        <i class="bi bi-pencil-square me-1"></i>Sửa thông tin
+    </a>
+</div>
+
+@if (TempData["Success"] is string successMessage)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @successMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white fw-bold py-3">
+                Thông tin tài khoản
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-5">Email</dt>
+                    <dd class="col-sm-7">@Model.Email</dd>
+
+                    <dt class="col-sm-5">Tên đăng nhập</dt>
+                    <dd class="col-sm-7">@Model.UserName</dd>
+
+                    <dt class="col-sm-5">Số điện thoại</dt>
+                    <dd class="col-sm-7">
+                        @(string.IsNullOrWhiteSpace(Model.PhoneNumber)
+                            ? "Chưa cập nhật"
+                            : Model.PhoneNumber)
+                    </dd>
+
+                    <dt class="col-sm-5">Vai trò</dt>
+                    <dd class="col-sm-7">
+                        @foreach (var roleName in Model.Roles)
+                        {
+                            <span class="badge @(roleName == "Admin" ? "text-bg-danger" : "text-bg-secondary") me-1">
+                                @roleName
+                            </span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-5">Xác nhận email</dt>
+                    <dd class="col-sm-7">
+                        @if (Model.EmailConfirmed)
+                        {
+                            <span class="text-success">Đã xác nhận</span>
+                        }
+                        else
+                        {
+                            <span class="text-warning">Chưa xác nhận</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-5">Xác thực 2 bước</dt>
+                    <dd class="col-sm-7">
+                        @(Model.TwoFactorEnabled ? "Đang bật" : "Chưa bật")
+                    </dd>
+
+                    <dt class="col-sm-5">Trạng thái</dt>
+                    <dd class="col-sm-7">
+                        @if (Model.IsLocked)
+                        {
+                            <span class="badge text-bg-danger">Đang bị khóa</span>
+                        }
+                        else
+                        {
+                            <span class="badge text-bg-success">Hoạt động</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-5">Đăng nhập sai</dt>
+                    <dd class="col-sm-7">@Model.AccessFailedCount lần</dd>
+
+                    <dt class="col-sm-5">Hạng khách hàng</dt>
+                    <dd class="col-sm-7">
+                        @if (Model.IsVip)
+                        {
+                            <span class="badge text-bg-warning">VIP</span>
+                        }
+                        else
+                        {
+                            <span class="badge text-bg-light border text-dark">Thường</span>
+                        }
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="row g-3 h-100">
+            <div class="col-sm-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="text-muted small">Tổng đơn hàng</div>
+                        <div class="fs-2 fw-bold">@Model.TotalOrders</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="text-muted small">Đơn đã giao</div>
+                        <div class="fs-2 fw-bold text-success">@Model.DeliveredOrders</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="text-muted small">Đơn đã hủy</div>
+                        <div class="fs-2 fw-bold text-danger">@Model.CancelledOrders</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="text-muted small">Tổng đã chi</div>
+                        <div class="fs-4 fw-bold text-primary">
+                            @Model.TotalSpent.ToString("N0") ₫
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <div class="fw-bold">Lịch sử đơn hàng</div>
+        <span class="badge text-bg-secondary">@Model.Orders.Count đơn</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Mã đơn</th>
+                    <th>Ngày đặt</th>
+                    <th>Người nhận</th>
+                    <th>Trạng thái</th>
+                    <th class="text-end">Tổng tiền</th>
+                    <th class="text-end">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Orders.Count == 0)
+                {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-5">
+                            Người dùng này chưa đặt đơn hàng nào.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var order in Model.Orders)
+                    {
+                        <tr>
+                            <td class="fw-semibold">#@order.OrderId</td>
+                            <td>@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                <div>@order.CustomerName</div>
+                                <div class="small text-muted">@order.CustomerPhone</div>
+                            </td>
+                            <td>
+                                <span class="badge text-bg-light border text-dark">
+                                    @order.Status
+                                </span>
+                            </td>
+                            <td class="text-end">@order.TotalPrice.ToString("N0") ₫</td>
+                            <td class="text-end">
+                                <a asp-controller="Admin"
+                                   asp-action="OrderDetails"
+                                   asp-route-orderId="@order.OrderId"
+                                   class="btn btn-sm btn-outline-primary">
+                                    Xem đơn
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,14 +1,55 @@
 ﻿@model SweetCakeShop.Models.ViewModels.CheckoutViewModel
 @using SweetCakeShop.Models.ViewModels
-
+@using SweetCakeShop.Services
 @{
     ViewData["Title"] = "Checkout";
-    var cart = ViewData["Cart"] as CartViewModel ?? new CartViewModel();
-}
 
+    var cart =
+        ViewData["Cart"] as CartViewModel
+        ?? new CartViewModel();
+
+    var isVip = ViewBag.IsVip == true;
+
+    var vipDiscountRate = isVip
+        ? CustomerLoyaltyService.VipDiscountRate
+        : 0m;
+
+    var vipDiscountAmount = decimal.Round(
+        cart.TotalAmount * vipDiscountRate,
+        0,
+        MidpointRounding.AwayFromZero);
+
+    var totalAfterDiscount =
+        cart.TotalAmount - vipDiscountAmount;
+}
 <div class="container my-5">
     <h2 class="mb-4">Xác nhận đơn hàng</h2>
+    @if (isVip)
+    {
+        <div class="alert alert-warning shadow-sm">
+            <strong>👑 Thành viên VIP</strong>
 
+            <div>
+                Bạn được giảm 15% tiền sản phẩm trong đơn hàng này.
+            </div>
+        </div>
+    }
+    else
+    {
+        var deliveredCount = (int)(ViewBag.DeliveredOrderCount ?? 0);
+        var remaining = Math.Max(
+            0,
+            CustomerLoyaltyService.VipRequiredDeliveredOrders
+            - deliveredCount);
+
+        <div class="alert alert-light border">
+            Bạn đã hoàn thành
+            <strong>@deliveredCount/5</strong> đơn hàng.
+
+            Cần thêm <strong>@remaining</strong> đơn đã giao
+            để trở thành VIP.
+        </div>
+    }
     <div class="row">
         <div class="col-md-6">
             <h5>Thông tin giao hàng</h5>
@@ -96,6 +137,18 @@
                 <tfoot>
                     <tr>
                         <td colspan="3" class="text-end">Tạm tính:</td>
+                        @if (isVip)
+                        {
+                            <tr class="text-success">
+                                <td colspan="3" class="text-end">
+                                    Ưu đãi VIP (15%):
+                                </td>
+
+                                <td>
+                                    -@vipDiscountAmount.ToString("N0") ₫
+                                </td>
+                            </tr>
+                        }
                         <td id="subtotal">@cart.TotalAmount.ToString("N0") ₫</td>
                     </tr>
 
@@ -107,7 +160,7 @@
                     <tr class="table-success">
                         <td colspan="3" class="text-end fw-bold">Tổng thanh toán:</td>
                         <td class="fw-bold" id="grand-total">
-                            @cart.TotalAmount.ToString("N0") ₫
+                            @totalAfterDiscount.ToString("N0") ₫
                         </td>
                     </tr>
                 </tfoot>
@@ -274,12 +327,13 @@
                     document.getElementById("shipping-fee-value").value =
                         data.shippingFee;
                     const subtotal = @Html.Raw(cart.TotalAmount.ToString(System.Globalization.CultureInfo.InvariantCulture));
-
+                    const vipDiscount =@Html.Raw(vipDiscountAmount.ToString(System.Globalization.CultureInfo.InvariantCulture));
                     document.getElementById("shipping-total").innerText =
                         Number(data.shippingFee).toLocaleString("vi-VN") + " ₫";
 
                     document.getElementById("grand-total").innerText =
-                        Number(subtotal + data.shippingFee).toLocaleString("vi-VN") + " ₫";
+                        Number(subtotal - vipDiscount + data.shippingFee)
+                            .toLocaleString("vi-VN") + " ₫";
 
                 })
                 .catch(err => {

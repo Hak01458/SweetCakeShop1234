@@ -3,8 +3,10 @@
     using SweetCakeShop.Data;
     using SweetCakeShop.Services;
     using Stripe;
+    using Microsoft.AspNetCore.Identity.UI.Services;
     using SweetCakeShop.Configurations;
-    namespace SweetCakeShop
+
+namespace SweetCakeShop
     {
         public class Program
         {
@@ -26,8 +28,12 @@
                     .AddRoles<IdentityRole>()
                     .AddEntityFrameworkStores<ApplicationDbContext>();
 
-                // Configure Identity cookie so "Remember me" creates a persistent cookie
-                builder.Services.ConfigureApplicationCookie(options =>
+            builder.Services.Configure<EmailSettings>(
+     builder.Configuration.GetSection("EmailSettings"));
+
+            builder.Services.AddTransient<IEmailSender, GmailEmailSender>();
+            // Configure Identity cookie so "Remember me" creates a persistent cookie
+            builder.Services.ConfigureApplicationCookie(options =>
                 {
                     // How long the persistent cookie (when RememberMe = true) will persist
                     // Set to a very long duration (100 years) to effectively remove a practical expiration.
@@ -58,6 +64,8 @@
                 });
                 builder.Services.AddScoped<CartService>();
                 builder.Services.AddScoped<OrderService>();
+            builder.Services.AddScoped<OrderEmailService>();
+            builder.Services.AddScoped<CustomerLoyaltyService>();
             // Session and cart registration
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddSession(options =>

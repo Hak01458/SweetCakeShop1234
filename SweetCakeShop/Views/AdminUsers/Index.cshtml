@@ -1,0 +1,193 @@
+﻿@model SweetCakeShop.Models.ViewModels.AdminUserIndexViewModel
+@{
+    ViewData["Title"] = "Quản lý người dùng";
+    Layout = "_AdminLayout";
+
+    var totalUsers = Model.Users.Count;
+    var adminCount = Model.Users.Count(user => user.Roles.Contains("Admin"));
+    var vipCount = Model.Users.Count(user => user.IsVip);
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h2 class="mb-1">Quản lý người dùng</h2>
+        <p class="text-muted mb-0">
+            Xem thông tin, lịch sử đơn hàng và thay đổi vai trò tài khoản.
+        </p>
+    </div>
+</div>
+
+@if (TempData["Success"] is string successMessage)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @successMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] is string errorMessage)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @errorMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-muted small">Tài khoản đang hiển thị</div>
+                <div class="fs-3 fw-bold">@totalUsers</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-muted small">Quản trị viên</div>
+                <div class="fs-3 fw-bold text-danger">@adminCount</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-muted small">Khách hàng VIP</div>
+                <div class="fs-3 fw-bold text-warning">@vipCount</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-7">
+                <label class="form-label fw-semibold">Tìm kiếm</label>
+                <input type="text"
+                       name="searchTerm"
+                       value="@Model.SearchTerm"
+                       class="form-control"
+                       placeholder="Email, tên đăng nhập hoặc số điện thoại" />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Vai trò</label>
+                <select name="role" class="form-select">
+                    <option value="">Tất cả vai trò</option>
+                    <option value="User" selected="@(Model.Role == "User" ? "selected" : null)">
+                        User
+                    </option>
+                    <option value="Admin" selected="@(Model.Role == "Admin" ? "selected" : null)">
+                        Admin
+                    </option>
+                </select>
+            </div>
+
+            <div class="col-md-2 d-grid">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search me-1"></i>Tìm
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Người dùng</th>
+                    <th>Vai trò</th>
+                    <th>Email</th>
+                    <th class="text-center">Đơn hàng</th>
+                    <th class="text-center">Đã giao</th>
+                    <th class="text-end">Đã chi</th>
+                    <th class="text-end">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Users.Count == 0)
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-5">
+                            Không tìm thấy người dùng phù hợp.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var user in Model.Users)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">@user.Email</div>
+                                <div class="small text-muted">
+                                    @(string.IsNullOrWhiteSpace(user.PhoneNumber)
+                                        ? "Chưa có số điện thoại"
+                                        : user.PhoneNumber)
+                                </div>
+
+                                @if (user.IsVip)
+                                {
+                                    <span class="badge text-bg-warning mt-1">VIP</span>
+                                }
+
+                                @if (user.IsLocked)
+                                {
+                                    <span class="badge text-bg-danger mt-1">Đang khóa</span>
+                                }
+                            </td>
+
+                            <td>
+                                @foreach (var roleName in user.Roles)
+                                {
+                                    <span class="badge @(roleName == "Admin" ? "text-bg-danger" : "text-bg-secondary") me-1">
+                                        @roleName
+                                    </span>
+                                }
+                            </td>
+
+                            <td>
+                                @if (user.EmailConfirmed)
+                                {
+                                    <span class="text-success">
+                                        <i class="bi bi-check-circle-fill me-1"></i>Đã xác nhận
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-warning">
+                                        <i class="bi bi-exclamation-circle-fill me-1"></i>Chưa xác nhận
+                                    </span>
+                                }
+                            </td>
+
+                            <td class="text-center fw-semibold">@user.OrderCount</td>
+                            <td class="text-center">@user.DeliveredOrderCount</td>
+                            <td class="text-end">@user.TotalSpent.ToString("N0") ₫</td>
+
+                            <td class="text-end text-nowrap">
+                                <a asp-controller="AdminUsers"
+                                   asp-action="Details"
+                                   asp-route-id="@user.Id"
+                                   class="btn btn-sm btn-outline-primary">
+                                    Chi tiết
+                                </a>
+
+                                <a asp-controller="AdminUsers"
+                                   asp-action="Edit"
+                                   asp-route-id="@user.Id"
+                                   class="btn btn-sm btn-outline-secondary">
+                                    Sửa
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

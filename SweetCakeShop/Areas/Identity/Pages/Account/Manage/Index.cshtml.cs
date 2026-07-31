@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using SweetCakeShop.Services;
 
 namespace SweetCakeShop.Areas.Identity.Pages.Account.Manage
 {
@@ -16,13 +17,16 @@ namespace SweetCakeShop.Areas.Identity.Pages.Account.Manage
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly CustomerLoyaltyService _customerLoyaltyService;
 
         public IndexModel(
-            UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager)
+        UserManager<IdentityUser> userManager,
+        SignInManager<IdentityUser> signInManager,
+        CustomerLoyaltyService customerLoyaltyService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _customerLoyaltyService = customerLoyaltyService;
         }
 
         /// <summary>
@@ -30,6 +34,13 @@ namespace SweetCakeShop.Areas.Identity.Pages.Account.Manage
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public string Username { get; set; }
+        public int DeliveredOrderCount { get; set; }
+
+        public bool IsVip { get; set; }
+
+        public int RemainingOrders { get; set; }
+
+        public int VipProgressPercent { get; set; }
 
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -62,10 +73,31 @@ namespace SweetCakeShop.Areas.Identity.Pages.Account.Manage
 
         private async Task LoadAsync(IdentityUser user)
         {
-            var userName = await _userManager.GetUserNameAsync(user);
-            var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
+            var userName =
+                await _userManager.GetUserNameAsync(user);
+
+            var phoneNumber =
+                await _userManager.GetPhoneNumberAsync(user);
 
             Username = userName;
+
+            DeliveredOrderCount =
+                await _customerLoyaltyService
+                    .GetDeliveredOrderCountAsync(user.Id);
+
+            IsVip =
+                DeliveredOrderCount >=
+                CustomerLoyaltyService.VipRequiredDeliveredOrders;
+
+            RemainingOrders = Math.Max(
+                0,
+                CustomerLoyaltyService.VipRequiredDeliveredOrders
+                - DeliveredOrderCount);
+
+            VipProgressPercent = Math.Min(
+                100,
+                DeliveredOrderCount * 100 /
+                CustomerLoyaltyService.VipRequiredDeliveredOrders);
 
             Input = new InputModel
             {

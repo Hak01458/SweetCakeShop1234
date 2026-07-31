@@ -54,9 +54,9 @@ namespace SweetCakeShop.Areas.Identity.Pages.Account
             if (ModelState.IsValid)
             {
                 var user = await _userManager.FindByEmailAsync(Input.Email);
-                if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
+                if (user == null)
                 {
-                    // Don't reveal that the user does not exist or is not confirmed
+                    // Không tiết lộ email có tồn tại hay không
                     return RedirectToPage("./ForgotPasswordConfirmation");
                 }
 
@@ -70,11 +70,58 @@ namespace SweetCakeShop.Areas.Identity.Pages.Account
                     values: new { area = "Identity", code },
                     protocol: Request.Scheme);
 
-                await _emailSender.SendEmailAsync(
-                    Input.Email,
-                    "Reset Password",
-                    $"Please reset your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
+                await _emailSender.SendEmailAsync(
+    Input.Email,
+    "Đặt lại mật khẩu - SweetCakeShop",
+    $"""
+    <!DOCTYPE html>
+    <html lang="vi">
+    <body style="font-family:Arial,sans-serif;background:#fff7fa;padding:30px;">
+        <div style="max-width:600px;margin:auto;background:white;
+                    border-radius:18px;padding:30px;
+                    box-shadow:0 6px 20px rgba(0,0,0,0.08);">
+
+            <h2 style="color:#d81b60;">
+                Đặt lại mật khẩu
+            </h2>
+
+            <p>
+                SweetCakeShop nhận được yêu cầu đặt lại mật khẩu
+                cho tài khoản của bạn.
+            </p>
+
+            <p>
+                Nhấn vào nút bên dưới để tạo mật khẩu mới:
+            </p>
+
+            <p style="text-align:center;margin:30px 0;">
+                <a href="{HtmlEncoder.Default.Encode(callbackUrl)}"
+                   style="display:inline-block;
+                          background:#d81b60;
+                          color:white;
+                          padding:13px 25px;
+                          border-radius:10px;
+                          text-decoration:none;
+                          font-weight:bold;">
+                    Đặt lại mật khẩu
+                </a>
+            </p>
+
+            <p style="color:#777;font-size:14px;">
+                Nếu bạn không yêu cầu đặt lại mật khẩu,
+                hãy bỏ qua email này.
+            </p>
+
+            <hr style="border:none;border-top:1px solid #eee;" />
+
+            <p style="color:#999;font-size:13px;">
+                SweetCakeShop
+            </p>
+        </div>
+    </body>
+    </html>
+    """);
                 return RedirectToPage("./ForgotPasswordConfirmation");
             }
 

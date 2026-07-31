@@ -20,6 +20,10 @@ namespace SweetCakeShop.Models
         public bool IsGuest { get; set; } = true;
 
         public DateTime OrderDate { get; set; } = DateTime.Now;
+        /// <summary>
+        /// Thời điểm gửi email xác nhận đơn hàng
+        /// </summary>
+        public DateTime? ConfirmationEmailSentAt { get; set; }
 
         public decimal TotalPrice { get; set; }
 

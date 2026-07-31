@@ -1,65 +1,233 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Admin</title>
+    <title>@ViewData["Title"] - SweetCake Admin</title>
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
+    <style>
+            :root {
+                --cake-primary: #d81b60; /* Màu hồng đậm thương hiệu */
+                --cake-primary-light: #fff0f5; /* Màu hồng sữa nhạt cho hover */
+                --cake-bg: #fcf8f8; /* Nền xám kem cực nhẹ cho khu vực nội dung */
+                --cake-sidebar-bg: #ffffff;
+                --cake-text-dark: #333333;
+                --cake-text-muted: #5c5c5c;
+            }
+
+            body {
+                font-family: 'Plus Jakarta Sans', sans-serif;
+                background-color: var(--cake-bg);
+                color: var(--cake-text-dark);
+                overflow-x: hidden;
+            }
+
+            /* Tùy chỉnh thanh Sidebar Admin */
+            .admin-sidebar {
+                background-color: var(--cake-sidebar-bg);
+                box-shadow: 4px 0 24px rgba(216, 27, 96, 0.03); /* Đổ bóng cực nhẹ */
+                border-right: 1px solid #f3e6e8 !important; /* Viền nâu hồng siêu mỏng */
+                padding: 0 !important; /* Bỏ padding mặc định để căn chỉnh menu full */
+                display: flex;
+                flex-direction: column;
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                z-index: 100;
+            }
+
+            /* Khu vực Header của Sidebar (Logo + Tên) */
+            .sidebar-header {
+                padding: 1.5rem 1.25rem;
+                border-bottom: 1px solid #f3e6e8;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            /* Tên thương hiệu */
+            .sidebar-brand {
+                color: var(--cake-primary);
+                font-weight: 700;
+                font-size: 1.25rem;
+                letter-spacing: 0.5px;
+                margin: 0;
+            }
+
+            /* Khu vực chứa các mục Menu */
+            .sidebar-menu-wrapper {
+                padding: 1.25rem 1rem;
+                flex-grow: 1;
+                overflow-y: auto; /* Cho phép cuộn menu nếu quá dài */
+            }
+
+            /* Thiết kế menu link */
+            .admin-sidebar .nav-link {
+                color: var(--cake-text-muted);
+                font-weight: 500;
+                padding: 0.85rem 1rem;
+                border-radius: 12px; /* Bo góc mềm mại */
+                transition: all 0.2s ease-in-out;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                font-size: 0.95rem;
+                margin-bottom: 4px;
+                text-decoration: none;
+            }
+
+                /* Hiệu ứng khi di chuột (Hover) */
+                .admin-sidebar .nav-link:hover {
+                    background-color: var(--cake-primary-light);
+                    color: var(--cake-primary);
+                }
+
+                /* Trạng thái Active - Mục hiện tại đang chọn */
+                .admin-sidebar .nav-link.active-cake {
+                    background: linear-gradient(135deg, #d81b60, #ec407a); /* Gradient hồng ngọt ngào */
+                    color: #ffffff !important;
+                    font-weight: 600;
+                    box-shadow: 0 4px 12px rgba(216, 27, 96, 0.15);
+                }
+
+                /* Tùy chỉnh Icon trong menu */
+                .admin-sidebar .nav-link i {
+                    font-size: 1.2rem;
+                    color: #888;
+                    transition: color 0.2s ease;
+                    width: 24px;
+                    text-align: center;
+                }
+
+                .admin-sidebar .nav-link:hover i,
+                .admin-sidebar .nav-link.active-cake i {
+                    color: inherit; /* Sử dụng màu của text cha */
+                }
+
+            /* Khu vực nội dung chính */
+            .admin-main-content {
+                background-color: var(--cake-bg);
+                padding: 2rem !important;
+            }
+
+            /* Căn chỉnh nội dung khi sidebar cố định */
+            @@media (min-width: 768px) {
+                .admin-main-content {
+                    margin-left: 25%; /* col-md-3 */
+                }
+            }
+            @@media (min-width: 992px) {
+                .admin-main-content {
+                    margin-left: 16.666667%; /* col-lg-2 */
+                }
+            }
+
+            /* Tùy chỉnh làm đẹp phần ruột nội dung con (thường là các bảng dữ liệu, card) */
+            .admin-main-content .card {
+                border: none;
+                border-radius: 16px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+            }
+
+            .admin-main-content .page-title {
+                color: var(--cake-text-dark);
+                font-weight: 700;
+                margin-bottom: 1.5rem;
+            }
+    </style>
+
     @await RenderSectionAsync("Styles", required: false)
-
 </head>
-
-<body class="bg-light">
+<body>
     <div class="container-fluid">
-        <div class="row min-vh-100">
-            <aside class="col-12 col-md-3 col-lg-2 bg-white border-end p-3">
-                <h5 class="mb-4">Admin Panel</h5>
-                <ul class="nav flex-column gap-1">
-                    <li class="nav-item">
-                        <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active fw-semibold" : "text-dark")"
+        <div class="row">
+            <aside class="col-12 col-md-3 col-lg-2 admin-sidebar">
+                <div class="sidebar-header">
+                    <span class="fs-3">🍰</span>
+                    <h5 class="sidebar-brand">SweetCake Admin</h5>
+                </div>
+
+                <div class="sidebar-menu-wrapper">
+                    <ul class="nav flex-column gap-1">
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" && ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active-cake" : "")"
                                asp-controller="Home" asp-action="Index">
-                            Trang chủ
-                        </a>
-                        <a class="nav-link @((ViewContext.RouteData.Values["action"]?.ToString() == "Orders" || ViewContext.RouteData.Values["action"]?.ToString() == "OrderDetails") ? "active fw-semibold" : "text-dark")"
-                           asp-controller="Admin" asp-action="Orders">
-                            Xem Orders
-                        </a>
-                        <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Categories" ? "active fw-semibold" : "text-dark")"
-                           asp-controller="Admin" asp-action="Categories">
-                            Danh mục
-                        </a>
-                        <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Ingredients" ? "active fw-semibold" : "text-dark")"
+                                <i class="bi bi-speedometer2"></i>
+                                Trang chủ
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @((ViewContext.RouteData.Values["action"]?.ToString() == "Orders" || ViewContext.RouteData.Values["action"]?.ToString() == "OrderDetails") ? "active-cake" : "")"
+                               asp-controller="Admin" asp-action="Orders">
+                                <i class="bi bi-cart3"></i>
+                                Quản lý đơn hàng
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Categories" ? "active-cake" : "")"
+                               asp-controller="Admin" asp-action="Categories">
+                                <i class="bi bi-tags"></i>
+                                Danh mục bánh
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Ingredients" ? "active-cake" : "")"
                                asp-controller="Admin" asp-action="Ingredients">
-                            Xem Nguyên liệu tồn kho
-                        </a>
-                        <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Products" ? "active fw-semibold" : "text-dark")"
-                           asp-controller="Admin" asp-action="Products">
-                            Xem số lượng bánh có thể làm
-                        </a>
-                        <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "TopSellingProducts" ? "active fw-semibold" : "text-dark")"
-                           asp-controller="Admin" asp-action="TopSellingProducts">
-                            Bánh bán chạy nhất
-                        </a>
-                        <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Revenue" ? "active fw-semibold" : "text-dark")"
-                           asp-controller="Admin" asp-action="Revenue">
-                            Thống kê doanh thu
-                        </a>
-                </ul>
+                                <i class="bi bi-box-seam"></i>
+                                Nguyên liệu tồn kho
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Products" ? "active-cake" : "")"
+                               asp-controller="Admin" asp-action="Products">
+                                <i class="bi bi-cookie"></i>
+                                Bánh có thể làm
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "TopSellingProducts" ? "active-cake" : "")"
+                               asp-controller="Admin" asp-action="TopSellingProducts">
+                                <i class="bi bi-fire"></i>
+                                Bánh bán chạy nhất
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Revenue" ? "active-cake" : "")"
+                               asp-controller="Admin" asp-action="Revenue">
+                                <i class="bi bi-graph-up-arrow"></i>
+                                Thống kê doanh thu
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "AdminUsers" ? "active-cake" : "")"
+                               asp-controller="AdminUsers" asp-action="Index">
+                                <i class="bi bi-people"></i>
+                                Quản lý người dùng
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </aside>
 
-            <main class="col-12 col-md-9 col-lg-10 p-3 p-md-4">
+            <main class="col-12 col-md-9 col-lg-10 admin-main-content">
                 @RenderBody()
             </main>
         </div>
     </div>
 
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
-
 </html>

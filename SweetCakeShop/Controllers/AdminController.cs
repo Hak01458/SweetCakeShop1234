@@ -5,7 +5,7 @@ using SweetCakeShop.Constants;
 using SweetCakeShop.Data;
 using SweetCakeShop.Models;
 using SweetCakeShop.Services;
-
+using SweetCakeShop.Models.ViewModels   ;
 namespace SweetCakeShop.Controllers
 {
     [Authorize(Roles = nameof(Roles.Admin))]
@@ -149,6 +149,15 @@ namespace SweetCakeShop.Controllers
             }
 
             order.Status = status;
+            if (status == "Delivered")
+            {
+                order.ShippingStatus = "delivered";
+
+                if (order.DeliveredDate == null)
+                {
+                    order.DeliveredDate = DateTime.Now;
+                }
+            }
             await _context.SaveChangesAsync();
 
             TempData["Success"] = $"Đã cập nhật trạng thái đơn #{order.OrderId}";
