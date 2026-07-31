@@ -1,80 +1,843 @@
 @model IEnumerable<SweetCakeShop.Models.Order>
+
 @{
     Layout = "_AdminLayout";
-    ViewData["Title"] = "Danh sách đơn hàng";
-    var stt = 0;
+    ViewData["Title"] = "Quản lý đơn hàng";
+
+    var totalOrders = Model.Count();
+    var deliveredOrders = Model.Count(x => x.Status == "Delivered");
+    var processingOrders = Model.Count(x => x.Status == "Confirmed" || x.Status == "Baked");
+    var cancelledOrders = Model.Count(x => x.Status == "Cancelled");
+    var totalRevenue = Model.Sum(x => x.TotalPrice);
 }
 
-@if (TempData["Success"] is string success)
+@if (TempData["Success"] != null)
 {
-    <div class="alert alert-success py-2">@success</div>
-}
-@if (TempData["Error"] is string error)
-{
-    <div class="alert alert-danger py-2">@error</div>
-}
-
-<div class="card shadow-sm border-0">
-    <div class="card-header bg-white d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Danh sách đơn hàng</h5>
-        <span class="badge text-bg-secondary">@Model.Count()</span>
+    <div class="alert alert-success alert-dismissible fade show shadow-sm">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        @TempData["Success"]
+        <button class="btn-close" data-bs-dismiss="alert"></button>
     </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th style="width:70px;">STT</th>
-                        <th style="width:180px;">Ngày đặt</th>
-                        <th style="width:160px;">Tổng giá</th>
-                        <th style="width:220px;">Trạng thái</th>
-                        <th class="text-end" style="width:320px;">Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody>
-                @foreach (var order in Model)
-                {
-                    stt++;
-                    <tr>
-                        <td>@stt</td>
-                        <td>@order.OrderDate.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
-                        <td>@order.TotalPrice.ToString("N0") đ</td>
-                        <td>
-                            <form asp-action="UpdateOrderStatus" asp-controller="Admin" method="post" class="d-flex gap-2">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="orderId" value="@order.OrderId" />
-                                <select name="status" class="form-select form-select-sm">
-                                    <option value="COD" selected="@(order.Status == "COD")">COD</option>
-                                    <option value="Confirmed" selected="@(order.Status == "Confirmed")">Confirmed</option>
-                                    <option value="Baked" selected="@(order.Status == "Baked")">Baked</option>
-                                    <option value="Delivered" selected="@(order.Status == "Delivered")">Delivered</option>
-                                    <option value="Cancelled" selected="@(order.Status == "Cancelled")">Cancelled</option>
-                                </select>
-                                <button type="submit" class="btn btn-sm btn-outline-primary">Lưu</button>
-                            </form>
-                        </td>
-                        <td class="text-end">
-                            <a asp-action="OrderDetails" asp-controller="Admin" asp-route-orderId="@order.OrderId"
-                               class="btn btn-sm btn-outline-info">
-                                Xem chi tiết
-                            </a>
+}
 
-                            <form asp-action="DeleteOrder" asp-controller="Admin" method="post" class="d-inline"
-                                  onsubmit="return confirm('Bạn có chắc muốn xóa đơn này?');">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="orderId" value="@order.OrderId" />
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
-                            </form>
-                        </td>
-                    </tr>
-                }
-                </tbody>
-            </table>
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm">
+        <i class="bi bi-exclamation-circle-fill me-2"></i>
+        @TempData["Error"]
+        <button class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="container-fluid">
+
+    <!-- PAGE HEADER -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2 class="fw-bold mb-1">
+
+                <i class="bi bi-bag-check-fill text-danger"></i>
+
+                Quản lý đơn hàng
+
+            </h2>
+
+            <p class="text-muted mb-0">
+
+                Theo dõi tất cả đơn hàng của khách hàng
+
+            </p>
+
         </div>
 
-        @if (!Model.Any())
-        {
-            <div class="text-muted">Chưa có đơn hàng nào.</div>
-        }
+        <div>
+
+            <span class="badge bg-danger fs-6 px-4 py-3">
+
+                @totalOrders Đơn hàng
+
+            </span>
+
+        </div>
+
     </div>
-</div>
+
+    <!-- DASHBOARD -->
+
+    <div class="row g-4 mb-4">
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="dashboard-card card-total">
+
+                <div>
+
+                    <small>Tổng đơn hàng</small>
+
+                    <h2>@totalOrders</h2>
+
+                </div>
+
+                <i class="bi bi-cart-check-fill"></i>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="dashboard-card card-processing">
+
+                <div>
+
+                    <small>Đang xử lý</small>
+
+                    <h2>@processingOrders</h2>
+
+                </div>
+
+                <i class="bi bi-hourglass-split"></i>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="dashboard-card card-success">
+
+                <div>
+
+                    <small>Đã giao</small>
+
+                    <h2>@deliveredOrders</h2>
+
+                </div>
+
+                <i class="bi bi-truck"></i>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="dashboard-card card-revenue">
+
+                <div>
+
+                    <small>Doanh thu</small>
+
+                    <h5>@totalRevenue.ToString("N0") đ</h5>
+
+                </div>
+
+                <i class="bi bi-cash-stack"></i>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- SEARCH -->
+
+    <div class="card shadow-sm border-0 rounded-4 mb-4">
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-lg-8">
+
+                    <div class="input-group">
+
+                        <span class="input-group-text bg-white">
+
+                            <i class="bi bi-search"></i>
+
+                        </span>
+
+                        <input type="text"
+                               id="searchOrder"
+                               class="form-control"
+                               placeholder="Tìm theo tên khách hàng, mã đơn hoặc trạng thái..." />
+
+                    </div>
+
+                </div>
+
+                <div class="col-lg-4 text-end">
+
+                    <span class="text-muted">
+
+                        Cập nhật:
+                        @DateTime.Now.ToString("dd/MM/yyyy HH:mm")
+
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- DANH SÁCH ĐƠN -->
+
+    <div class="row g-4" id="orderContainer">
+        @foreach (var order in Model)
+{
+    <div class="col-xl-6 col-12 order-card-item">
+
+        <div class="card border-0 shadow-sm rounded-4 h-100 order-card">
+
+            <!-- Header -->
+            <div class="card-header bg-white border-0 pb-0">
+
+                <div class="d-flex justify-content-between align-items-start">
+
+                    <div>
+
+                        <h5 class="fw-bold text-danger mb-1">
+                            <i class="bi bi-receipt-cutoff"></i>
+                            Đơn hàng #@order.OrderId
+                        </h5>
+
+                        <small class="text-muted">
+                            <i class="bi bi-calendar-event"></i>
+                            @order.OrderDate.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                        </small>
+
+                    </div>
+
+                    <div>
+
+                        @switch(order.Status)
+                        {
+                            case "Delivered":
+                                <span class="badge bg-success px-3 py-2">
+                                    Đã giao
+                                </span>
+                                break;
+
+                            case "Cancelled":
+                                <span class="badge bg-danger px-3 py-2">
+                                    Đã hủy
+                                </span>
+                                break;
+
+                            case "Confirmed":
+                                <span class="badge bg-primary px-3 py-2">
+                                    Đã xác nhận
+                                </span>
+                                break;
+
+                            case "Baked":
+                                <span class="badge bg-warning text-dark px-3 py-2">
+                                    Đã làm bánh
+                                </span>
+                                break;
+
+                            default:
+                                <span class="badge bg-secondary px-3 py-2">
+                                    COD
+                                </span>
+                                break;
+                        }
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Body -->
+            <div class="card-body">
+
+                <div class="row">
+
+                    <div class="col-md-6">
+
+                        <div class="info-item">
+
+                            <small class="text-muted">
+
+                                Khách hàng
+
+                            </small>
+
+                            <h6 class="fw-bold">
+
+                                @order.CustomerName
+
+                            </h6>
+
+                        </div>
+
+                        <div class="info-item mt-3">
+                                    @if (order.ExpectedDeliveryDate != null)
+                                    {
+                                        <div class="info-item mt-3">
+
+                                            <small class="text-muted">
+                                                Dự kiến giao
+                                            </small>
+
+                                            <div>
+                                                @order.ExpectedDeliveryDate.Value.ToString("dd/MM/yyyy")
+                                            </div>
+
+                                        </div>
+                                    }
+                                    @if (order.DeliveredDate != null)
+                                    {
+                                        <div class="info-item mt-3">
+
+                                            <small class="text-muted">
+                                                Đã giao lúc
+                                            </small>
+
+                                            <div class="text-success fw-bold">
+                                                @order.DeliveredDate.Value.ToString("dd/MM/yyyy HH:mm")
+                                            </div>
+
+                                        </div>
+                                    }
+
+                            <small class="text-muted">
+
+                                Email
+
+                            </small>
+
+                            <div>
+
+                                @order.CustomerEmail
+
+                            </div>
+
+                        </div>
+
+                        <div class="info-item mt-3">
+
+                            <small class="text-muted">
+
+                                Điện thoại
+
+                            </small>
+
+                            <div>
+
+                                @order.CustomerPhone
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="col-md-6">
+
+                        <div class="info-item">
+
+                            <small class="text-muted">
+
+                                Tổng tiền
+
+                            </small>
+
+                            <h4 class="text-danger fw-bold">
+
+                                @order.TotalPrice.ToString("N0") đ
+
+                            </h4>
+
+                        </div>
+
+                        <div class="info-item mt-3">
+
+                            <small class="text-muted">
+
+                                Phí vận chuyển
+
+                            </small>
+
+                            <div>
+
+                                @order.ShippingFee.ToString("N0") đ
+
+                            </div>
+
+                        </div>
+
+                        <div class="info-item mt-3">
+
+                            <small class="text-muted">
+
+                                GHN
+
+                            </small>
+
+                            <div>
+
+                                        @switch (order.ShippingStatus)
+                                        {
+                                            case "ready_to_pick":
+                                                <span class="badge bg-secondary">
+                                                    📦 Chờ lấy hàng
+                                                </span>
+                                                break;
+
+                                            case "picking":
+                                                <span class="badge bg-warning text-dark">
+                                                    🚚 Đang lấy hàng
+                                                </span>
+                                                break;
+
+                                            case "transporting":
+                                                <span class="badge bg-info">
+                                                    🚛 Đang vận chuyển
+                                                </span>
+                                                break;
+
+                                            case "delivering":
+                                                <span class="badge bg-primary">
+                                                    🏠 Đang giao hàng
+                                                </span>
+                                                break;
+
+                                            case "delivered":
+                                                <span class="badge bg-success">
+                                                    ✅ Đã giao
+                                                </span>
+                                                break;
+
+                                            case "GHN_ERROR":
+                                                <span class="badge bg-danger">
+                                                    ❌ Lỗi GHN
+                                                </span>
+                                                break;
+
+                                            default:
+                                                <span class="badge bg-dark">
+                                                    Chưa tạo đơn
+                                                </span>
+                                                break;
+                                        }
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <hr />
+
+                <div class="mb-3">
+
+                    <small class="text-muted">
+
+                        Địa chỉ giao hàng
+
+                    </small>
+
+                    <div class="mt-2">
+
+                        <i class="bi bi-geo-alt-fill text-danger"></i>
+
+                        @order.ShippingAddress
+
+                    </div>
+
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(order.GhnOrderCode))
+                {
+                            @if (order.ShippingStartTime != null &&
+             order.DeliverySimulationTime != null &&
+             order.Status != "Delivered")
+                            {
+                                var total = (order.DeliverySimulationTime.Value - order.ShippingStartTime.Value).TotalSeconds;
+                                var current = (DateTime.Now - order.ShippingStartTime.Value).TotalSeconds;
+
+                                var percent = (int)Math.Min(100,
+                                    Math.Max(0, current / total * 100));
+
+                                <div class="mt-3">
+
+                                    <small class="text-muted fw-bold">
+                                        Tiến độ giao hàng
+                                    </small>
+
+                                    <div class="progress mt-2" style="height:10px">
+
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                             style="width:@percent%">
+                                        </div>
+
+                                    </div>
+
+                                    <small class="text-muted">
+                                        @percent%
+                                    </small>
+
+                                </div>
+                            }
+                    <div class="alert alert-light border">
+
+                        <div class="fw-semibold">
+
+                            Mã vận đơn GHN
+
+                        </div>
+
+                        <div class="text-primary">
+
+                            @order.GhnOrderCode
+
+                        </div>
+
+                    </div>
+                        }
+                        <!-- Action -->
+
+                        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mt-4">
+
+                            <div class="d-flex flex-wrap gap-2">
+
+                                <a asp-action="OrderDetails"
+                                   asp-route-orderId="@order.OrderId"
+                                   class="btn btn-outline-primary rounded-pill">
+
+                                    <i class="bi bi-eye"></i>
+
+                                    Chi tiết
+
+                                </a>
+
+                                @if (!string.IsNullOrWhiteSpace(order.TrackingUrl))
+                                {
+                                    <a href="@order.TrackingUrl"
+                                       target="_blank"
+                                       class="btn btn-outline-success rounded-pill">
+
+                                        <i class="bi bi-truck"></i>
+
+                                        Theo dõi GHN
+
+                                    </a>
+                                }
+
+                            </div>
+
+                            <div>
+
+                                <form asp-action="UpdateOrderStatus"
+                                      method="post"
+                                      class="d-flex gap-2">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <input type="hidden"
+                                           name="orderId"
+                                           value="@order.OrderId" />
+
+                                    <select name="status"
+                                            class="form-select">
+
+                                        @if (order.Status == "COD")
+                                        {
+                                            <option value="COD" selected>COD</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="COD">COD</option>
+                                        }
+
+                                        @if (order.Status == "Confirmed")
+                                        {
+                                            <option value="Confirmed" selected>Confirmed</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="Confirmed">Confirmed</option>
+                                        }
+
+                                        @if (order.Status == "Baked")
+                                        {
+                                            <option value="Baked" selected>Baked</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="Baked">Baked</option>
+                                        }
+
+                                        @if (order.Status == "Delivered")
+                                        {
+                                            <option value="Delivered" selected>Delivered</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="Delivered">Delivered</option>
+                                        }
+
+                                        @if (order.Status == "Cancelled")
+                                        {
+                                            <option value="Cancelled" selected>Cancelled</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="Cancelled">Cancelled</option>
+                                        }
+
+                                    </select>
+
+                                    <button class="btn btn-warning rounded-pill">
+
+                                        <i class="bi bi-arrow-repeat"></i>
+
+                                        Cập nhật
+
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        </div>
+
+                        <hr />
+
+                        <div class="text-end">
+
+                            <form asp-action="DeleteOrder"
+                                  method="post"
+                                  onsubmit="return confirm('Bạn có chắc muốn xóa đơn hàng này?');">
+
+                                @Html.AntiForgeryToken()
+
+                                <input type="hidden"
+                                       name="orderId"
+                                       value="@order.OrderId" />
+
+                                <button class="btn btn-outline-danger rounded-pill">
+
+                                    <i class="bi bi-trash"></i>
+
+                                    Xóa đơn hàng
+
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        }
+
+    </div>
+    @section Styles{
+
+        <style>
+
+                body {
+                    background: #f5f7fb;
+                }
+
+                .dashboard-card {
+                    color: white;
+                    border-radius: 20px;
+                    padding: 28px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    min-height: 135px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,.08);
+                    transition: .3s;
+                }
+
+                    .dashboard-card:hover {
+                        transform: translateY(-6px);
+                    }
+
+                    .dashboard-card i {
+                        font-size: 45px;
+                        opacity: .35;
+                    }
+
+                    .dashboard-card h2,
+                    .dashboard-card h5 {
+                        margin-top: 8px;
+                        font-weight: 700;
+                    }
+
+                .card-total {
+                    background: linear-gradient(135deg,#ff6b6b,#ee5253);
+                }
+
+                .card-processing {
+                    background: linear-gradient(135deg,#4facfe,#00c6fb);
+                }
+
+                .card-success {
+                    background: linear-gradient(135deg,#43cea2,#185a9d);
+                }
+
+                .card-revenue {
+                    background: linear-gradient(135deg,#f7971e,#ffd200);
+                }
+
+                .order-card {
+                    transition: .25s;
+                }
+
+                    .order-card:hover {
+                        transform: translateY(-5px);
+                        box-shadow: 0 15px 35px rgba(0,0,0,.12) !important;
+                    }
+
+                .info-item {
+                    min-height: 55px;
+                }
+
+                    .info-item small {
+                        display: block;
+                        color: #888;
+                        margin-bottom: 4px;
+                    }
+
+                .card-header {
+                    border-bottom: none;
+                }
+
+                .badge {
+                    font-size: .82rem;
+                    font-weight: 600;
+                }
+
+                .btn {
+                    border-radius: 40px;
+                }
+
+                .form-select {
+                    min-width: 170px;
+                }
+
+                .alert {
+                    border-radius: 15px;
+                }
+
+                .input-group-text {
+                    border-radius: 15px 0 0 15px;
+                }
+
+                #searchOrder {
+                    border-radius: 0 15px 15px 0;
+                }
+
+                .card {
+                    border-radius: 20px;
+                }
+
+                .card-body {
+                    padding: 28px;
+                }
+
+                .card-header {
+                    padding: 24px 28px 0 28px;
+                }
+
+                .text-danger {
+                    color: #dc3545 !important;
+                }
+
+                .text-primary {
+                    font-weight: 600;
+                }
+
+                .order-card-item {
+                    transition: .25s;
+                }
+
+                @@media (max-width:991px) {
+
+                    .dashboard-card {
+                        min-height: 110px;
+                    }
+
+                        .dashboard-card i {
+                            font-size: 35px;
+                        }
+                }
+
+                @@media (max-width:768px) {
+
+                    .card-body {
+                        padding: 20px;
+                    }
+
+                    .card-header {
+                        padding: 20px 20px 0;
+                    }
+
+                    .form-select {
+                        width: 100%;
+                    }
+
+                    .d-flex.gap-2 {
+                        flex-direction: column;
+                    }
+                }
+
+        </style>
+
+    }
+    @section Scripts{
+
+        <script>
+
+                document.addEventListener("DOMContentLoaded", function() {
+
+                    const txt = document.getElementById("searchOrder");
+
+                    txt.addEventListener("keyup", function() {
+
+                        const keyword = this.value.toLowerCase();
+
+                        document.querySelectorAll(".order-card-item")
+                            .forEach(function(card) {
+
+                                const text = card.innerText.toLowerCase();
+
+                                if (text.indexOf(keyword) > -1) {
+
+                                    card.style.display = "block";
+
+                                }
+                                else {
+
+                                    card.style.display = "none";
+
+                                }
+
+                            });
+
+                    });
+
+                });
+
+        </script>
+
+    }

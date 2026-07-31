@@ -1,32 +1,101 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace SweetCakeShop.Models
 {
     public class Order
     {
         public int OrderId { get; set; }
 
-        // If the order was placed by an authenticated user, this will be populated.
-        // For guest checkout this stays empty.
         public string UserId { get; set; } = string.Empty;
 
-        // Shipping / customer fields (for guest checkout and for records)
         public string CustomerName { get; set; } = string.Empty;
+
         public string CustomerEmail { get; set; } = string.Empty;
+
         public string CustomerPhone { get; set; } = string.Empty;
+
         public string ShippingAddress { get; set; } = string.Empty;
+
         public bool IsGuest { get; set; } = true;
 
         public DateTime OrderDate { get; set; } = DateTime.Now;
-        public decimal TotalPrice { get; set; }
-        public string Status { get; set; } = "COD";     // COD, Confirmed, Baked, Delivered, Cancelled
 
-        public IdentityUser? User { get; set; }           // nếu dùng Identity
-        public ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
-        public string? GhnOrderCode { get; set; }      // Mã vận đơn GHN trả về
-        public string? TrackingUrl { get; set; }        // Link tracking cho khách
-        public decimal ShippingFee { get; set; } = 0;  // Phí ship tính từ GHN
-        public string? Province { get; set; }          // Tỉnh/thành (GHN cần mã)
-        public string? District { get; set; }          // Quận/huyện
-        public string? Ward { get; set; }              // Phường/xã
+        public decimal TotalPrice { get; set; }
+
+        public string Status { get; set; } = "COD";
+
+        public IdentityUser? User { get; set; }
+
+        public ICollection<OrderDetail> OrderDetails { get; set; }
+            = new List<OrderDetail>();
+
+
+        //=========================
+        // GHN
+        //=========================
+
+        /// <summary>
+        /// Mã vận đơn GHN
+        /// </summary>
+        public string? GhnOrderCode { get; set; }
+
+        /// <summary>
+        /// Link Tracking
+        /// </summary>
+        public string? TrackingUrl { get; set; }
+
+        /// <summary>
+        /// Phí vận chuyển
+        /// </summary>
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal ShippingFee { get; set; } = 0;
+
+        /// <summary>
+        /// ProvinceID của GHN
+        /// </summary>
+        public int? ProvinceId { get; set; }
+
+        /// <summary>
+        /// DistrictID của GHN
+        /// </summary>
+        public int? DistrictId { get; set; }
+
+        /// <summary>
+        /// WardCode của GHN
+        /// </summary>
+        public string? WardCode { get; set; }
+
+        /// <summary>
+        /// Tên tỉnh
+        /// </summary>
+        public string? Province { get; set; }
+
+        /// <summary>
+        /// Tên huyện
+        /// </summary>
+        public string? District { get; set; }
+
+        /// <summary>
+        /// Tên xã
+        /// </summary>
+        public string? Ward { get; set; }
+
+        /// <summary>
+        /// service_id GHN
+        /// </summary>
+        public int? ServiceId { get; set; }
+
+        /// <summary>
+        /// Trạng thái GHN
+        /// </summary>
+        public string? ShippingStatus { get; set; }
+        public DateTime? ExpectedDeliveryDate { get; set; }
+
+        public DateTime? DeliveredDate { get; set; }
+
+        public DateTime? ShippingStartTime { get; set; }
+
+        public DateTime? DeliverySimulationTime { get; set; }
     }
 }

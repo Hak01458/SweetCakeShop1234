@@ -1,12 +1,386 @@
-﻿
+﻿@model SweetCakeShop.Models.Order
+
 @{
-    ViewData["Title"] = "Order placed";
-    var orderId = ViewData["OrderId"];
+    ViewData["Title"] = "Đặt hàng thành công";
 }
 
-<div class="container my-5 text-center">
-    <h2 class="mb-3">Cảm ơn bạn rất nhiều vì đã mua bánh của bên chúng mình</h2></hr>
-    <p class="lead">Đơn hàng của bạn đã được tạo. Chúng tôi sẽ liên hệ bạn sớm.</p>
-    <img src="~/images/ThankFor.png" class="d-block w-100 rounded" style="max-height: 400px; width: 100%; object-fit: contain;" />
-    <a asp-controller="Home" asp-action="Index" class="btn btn-pink mt-3">Tiếp tục mua sắm</a>
+<style>
+    .success-card {
+        border: none;
+        border-radius: 25px;
+        overflow: hidden;
+        box-shadow: 0 15px 40px rgba(0,0,0,.08);
+    }
+
+    .success-header {
+        background: linear-gradient(135deg,#ffd6e7,#ffeef5);
+        padding: 50px 20px;
+    }
+
+    .success-icon {
+        width: 100px;
+        height: 100px;
+        background: #28a745;
+        color: white;
+        border-radius: 50%;
+        margin: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 55px;
+        box-shadow: 0 10px 25px rgba(40,167,69,.35);
+    }
+
+    .info-card {
+        border-radius: 20px;
+        border: none;
+        background: #fff;
+        box-shadow: 0 5px 18px rgba(0,0,0,.05);
+        height: 100%;
+    }
+
+    .section-title {
+        color: #ff4f87;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+
+    .info-item {
+        margin-bottom: 18px;
+    }
+
+        .info-item i {
+            color: #ff6b9c;
+            width: 25px;
+        }
+
+    .shipping-badge {
+        font-size: 15px;
+        padding: 8px 18px;
+        border-radius: 30px;
+    }
+
+    .btn-track {
+        background: #ff5f96;
+        color: white;
+        border: none;
+        border-radius: 30px;
+        padding: 12px 35px;
+        font-weight: 600;
+    }
+
+        .btn-track:hover {
+            background: #ff3d80;
+            color: white;
+        }
+
+    .btn-home {
+        border-radius: 30px;
+        padding: 12px 35px;
+        font-weight: 600;
+    }
+
+    .timeline {
+        position: relative;
+        margin-top: 50px;
+    }
+
+        .timeline:before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 18px;
+            width: 70%;
+            height: 4px;
+            background: #e9ecef;
+            transform: translateX(-50%);
+            z-index: 1;
+        }
+
+    .timeline-step {
+        position: relative;
+        z-index: 2;
+    }
+
+    .timeline-circle {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: auto;
+        background: #28a745;
+        color: white;
+        font-size: 20px;
+    }
+
+    .timeline-text {
+        margin-top: 10px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+</style>
+
+<div class="container my-5">
+
+    <div class="card success-card">
+
+        <div class="success-header text-center">
+
+            <div class="success-icon">
+                <i class="bi bi-check-lg"></i>
+            </div>
+
+            <h1 class="mt-4 text-success fw-bold">
+                Đặt hàng thành công!
+            </h1>
+
+            <p class="lead mb-0">
+                Cảm ơn bạn đã mua hàng tại
+                <strong>SweetCakeShop</strong> 💗
+            </p>
+
+            <small class="text-muted">
+                Chúng tôi sẽ chuẩn bị chiếc bánh thật ngon và giao đến bạn sớm nhất.
+            </small>
+
+        </div>
+
+        <div class="card-body p-5">
+
+            <div class="row g-4">
+
+                <!-- Order -->
+
+                <div class="col-lg-6">
+
+                    <div class="card info-card">
+
+                        <div class="card-body">
+
+                            <h4 class="section-title">
+                                <i class="bi bi-receipt-cutoff"></i>
+                                Thông tin đơn hàng
+                            </h4>
+
+                            <div class="info-item">
+                                <i class="bi bi-hash"></i>
+                                <strong>Mã đơn:</strong>
+                                #@Model.OrderId
+                            </div>
+
+                            <div class="info-item">
+                                <i class="bi bi-person-fill"></i>
+                                <strong>Khách hàng:</strong>
+                                @Model.CustomerName
+                            </div>
+
+                            <div class="info-item">
+                                <i class="bi bi-envelope-fill"></i>
+                                <strong>Email:</strong>
+                                @Model.CustomerEmail
+                            </div>
+
+                            <div class="info-item">
+                                <i class="bi bi-telephone-fill"></i>
+                                <strong>Điện thoại:</strong>
+                                @Model.CustomerPhone
+                            </div>
+
+                            <div class="info-item">
+                                <i class="bi bi-calendar-event-fill"></i>
+                                <strong>Ngày đặt:</strong>
+                                @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")
+                            </div>
+
+                            <div class="info-item">
+                                <i class="bi bi-cash-stack"></i>
+                                <strong>Tổng thanh toán:</strong>
+                                @Model.TotalPrice.ToString("N0") VNĐ
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Shipping -->
+
+                <div class="col-lg-6">
+
+                    <div class="card info-card">
+
+                        <div class="card-body">
+
+                            <h4 class="section-title">
+                                <i class="bi bi-truck"></i>
+                                Thông tin vận chuyển
+                            </h4>
+
+                            <div class="info-item">
+                                <i class="bi bi-box-seam"></i>
+                                <strong>Đơn vị:</strong>
+                                Giao Hàng Nhanh
+                            </div>
+
+                            <div class="info-item">
+                                <i class="bi bi-upc-scan"></i>
+                                <strong>Mã vận đơn:</strong>
+                                @(Model.GhnOrderCode ?? "Chưa tạo")
+                            </div>
+
+                            <div class="info-item">
+                                <i class="bi bi-currency-dollar"></i>
+                                <strong>Phí vận chuyển:</strong>
+                                @Model.ShippingFee.ToString("N0") VNĐ
+                            </div>
+
+                            <div class="info-item">
+                                <i class="bi bi-calendar-check"></i>
+                                <strong>Ngày giao dự kiến:</strong>
+                                @(Model.ExpectedDeliveryDate?.ToString("dd/MM/yyyy")
+                                    ?? "--")
+                            </div>
+
+                            <div class="info-item">
+                                <i class="bi bi-geo-alt-fill"></i>
+                                <strong>Địa chỉ:</strong><br />
+
+                                @Model.ShippingAddress<br />
+                                @Model.Ward, @Model.District, @Model.Province
+                            </div>
+
+                            <div class="info-item">
+
+                                <strong>Trạng thái:</strong><br /><br />
+
+                                @switch (Model.ShippingStatus)
+                                {
+                                    case "ready_to_pick":
+                                        <span class="badge bg-primary shipping-badge">
+                                            🚚 Chờ lấy hàng
+                                        </span>
+                                        break;
+
+                                    case "delivering":
+                                        <span class="badge bg-warning text-dark shipping-badge">
+                                            🚛 Đang giao
+                                        </span>
+                                        break;
+
+                                    case "delivered":
+                                        <span class="badge bg-success shipping-badge">
+                                            ✅ Đã giao
+                                        </span>
+                                        break;
+
+                                    case "GHN_ERROR":
+                                        <span class="badge bg-danger shipping-badge">
+                                            ❌ Chưa tạo được vận đơn
+                                        </span>
+                                        break;
+
+                                    default:
+                                        <span class="badge bg-secondary shipping-badge">
+                                            @Model.ShippingStatus
+                                        </span>
+                                        break;
+                                }
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Timeline -->
+
+            <div class="timeline">
+
+                <div class="row text-center">
+
+                    <div class="col timeline-step">
+                        <div class="timeline-circle">
+                            <i class="bi bi-cart-check"></i>
+                        </div>
+                        <div class="timeline-text">
+                            Đặt hàng
+                        </div>
+                    </div>
+
+                    <div class="col timeline-step">
+                        <div class="timeline-circle">
+                            <i class="bi bi-credit-card"></i>
+                        </div>
+                        <div class="timeline-text">
+                            Thanh toán
+                        </div>
+                    </div>
+
+                    <div class="col timeline-step">
+                        <div class="timeline-circle">
+                            <i class="bi bi-box-seam"></i>
+                        </div>
+                        <div class="timeline-text">
+                            GHN tiếp nhận
+                        </div>
+                    </div>
+
+                    <div class="col timeline-step">
+                        <div class="timeline-circle bg-secondary">
+                            <i class="bi bi-truck"></i>
+                        </div>
+                        <div class="timeline-text text-muted">
+                            Đang giao
+                        </div>
+                    </div>
+
+                    <div class="col timeline-step">
+                        <div class="timeline-circle bg-secondary">
+                            <i class="bi bi-house-check"></i>
+                        </div>
+                        <div class="timeline-text text-muted">
+                            Hoàn tất
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="text-center mt-5">
+
+                @if (!string.IsNullOrEmpty(Model.TrackingUrl))
+                {
+                    <a href="@Model.TrackingUrl"
+                       target="_blank"
+                       class="btn btn-track me-3">
+
+                        <i class="bi bi-truck"></i>
+                        Theo dõi đơn hàng
+
+                    </a>
+                }
+
+                <a asp-controller="Home"
+                   asp-action="Index"
+                   class="btn btn-outline-secondary btn-home">
+
+                    <i class="bi bi-house"></i>
+                    Tiếp tục mua sắm
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </div>

@@ -8,10 +8,12 @@ namespace SweetCakeShop.Services
     public class OrderService
     {
         private readonly ApplicationDbContext _db;
+        private readonly GhnService _ghnService;
 
-        public OrderService(ApplicationDbContext db)
+        public OrderService(ApplicationDbContext db, GhnService ghnService)
         {
             _db = db;
+            _ghnService = ghnService;
         }
 
         public async Task<Order> CreateOrderAsync(CartViewModel cart, CheckoutViewModel checkout, string? userId)
@@ -26,13 +28,23 @@ namespace SweetCakeShop.Services
                 CustomerEmail = checkout.CustomerEmail ?? string.Empty,
                 CustomerPhone = checkout.CustomerPhone ?? string.Empty,
                 ShippingAddress = checkout.ShippingAddress ?? string.Empty,
+
+                ProvinceId = checkout.ProvinceId,
+                DistrictId = checkout.DistrictId,
+                WardCode = checkout.WardCode,
+
                 Province = checkout.Province,
                 District = checkout.District,
                 Ward = checkout.Ward,
+
                 ShippingFee = checkout.ShippingFee,
+
                 IsGuest = string.IsNullOrEmpty(userId),
-                OrderDate = DateTime.UtcNow,
-                TotalPrice = cart.TotalAmount,
+                OrderDate = DateTime.Now,
+
+                // Tổng tiền = Tiền hàng + Phí ship
+                TotalPrice = cart.TotalAmount + checkout.ShippingFee,
+
                 Status = "COD"
             };
 
@@ -52,10 +64,6 @@ namespace SweetCakeShop.Services
             }
 
             await _db.SaveChangesAsync();
-
-            // load navigation if needed
-            await _db.Entry(order).Collection(o => o.OrderDetails).LoadAsync();
-
             return order;
         }
     }

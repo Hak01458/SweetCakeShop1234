@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SweetCakeShop.Data;
 
@@ -11,9 +12,11 @@ using SweetCakeShop.Data;
 namespace SweetCakeShop.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260724063008_UpdateOrderForGHN")]
+    partial class UpdateOrderForGHN
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -249,12 +252,6 @@ namespace SweetCakeShop.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IngredientID"));
 
-                    b.Property<DateTime?>("ExpiryDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("ImportDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("Measurement")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -292,20 +289,11 @@ namespace SweetCakeShop.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("DeliveredDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DeliverySimulationTime")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("District")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("DistrictId")
                         .HasColumnType("int");
-
-                    b.Property<DateTime?>("ExpectedDeliveryDate")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("GhnOrderCode")
                         .HasColumnType("nvarchar(max)");
@@ -331,9 +319,6 @@ namespace SweetCakeShop.Data.Migrations
 
                     b.Property<decimal>("ShippingFee")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime?>("ShippingStartTime")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("ShippingStatus")
                         .HasColumnType("nvarchar(max)");
