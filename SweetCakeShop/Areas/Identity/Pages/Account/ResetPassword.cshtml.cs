@@ -71,19 +71,30 @@ namespace SweetCakeShop.Areas.Identity.Pages.Account
 
         }
 
-        public IActionResult OnGet(string code = null)
+        public IActionResult OnGet(string? code = null, string? email = null)
         {
-            if (code == null)
+            if (string.IsNullOrWhiteSpace(code) ||
+                string.IsNullOrWhiteSpace(email))
             {
-                return BadRequest("A code must be supplied for password reset.");
+                return BadRequest(
+                    "Liên kết đặt lại mật khẩu không hợp lệ.");
             }
-            else
+
+            try
             {
                 Input = new InputModel
                 {
-                    Code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code))
+                    Email = email,
+                    Code = Encoding.UTF8.GetString(
+                        WebEncoders.Base64UrlDecode(code))
                 };
+
                 return Page();
+            }
+            catch (FormatException)
+            {
+                return BadRequest(
+                    "Mã đặt lại mật khẩu không hợp lệ.");
             }
         }
 
@@ -97,11 +108,18 @@ namespace SweetCakeShop.Areas.Identity.Pages.Account
             var user = await _userManager.FindByEmailAsync(Input.Email);
             if (user == null)
             {
-                // Don't reveal that the user does not exist
-                return RedirectToPage("./ResetPasswordConfirmation");
+                ModelState.AddModelError(
+                    string.Empty,
+                    "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.");
+
+                return Page();
             }
 
-            var result = await _userManager.ResetPasswordAsync(user, Input.Code, Input.Password);
+            var result = await _userManager.ResetPasswordAsync(
+                user,
+                Input.Code,
+                Input.Password);
+
             if (result.Succeeded)
             {
                 return RedirectToPage("./ResetPasswordConfirmation");
@@ -109,8 +127,11 @@ namespace SweetCakeShop.Areas.Identity.Pages.Account
 
             foreach (var error in result.Errors)
             {
-                ModelState.AddModelError(string.Empty, error.Description);
+                ModelState.AddModelError(
+                    string.Empty,
+                    error.Description);
             }
+
             return Page();
         }
     }

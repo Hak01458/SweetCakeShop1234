@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using SweetCakeShop.Constants;
 using SweetCakeShop.Data;
 using SweetCakeShop.Models;
-using SweetCakeShop.Models.ViewModels;  
+using SweetCakeShop.Models.ViewModels;
 
 namespace SweetCakeShop.Controllers
 {
@@ -154,8 +154,6 @@ namespace SweetCakeShop.Controllers
                 UserName = user.UserName ?? string.Empty,
                 PhoneNumber = user.PhoneNumber,
                 EmailConfirmed = user.EmailConfirmed,
-                TwoFactorEnabled = user.TwoFactorEnabled,
-                AccessFailedCount = user.AccessFailedCount,
                 LockoutEnd = user.LockoutEnd,
                 Roles = displayRoles,
                 Orders = orders,
@@ -233,10 +231,17 @@ namespace SweetCakeShop.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var currentAdminId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var currentRoles = await _userManager.GetRolesAsync(user);
-            var isCurrentlyAdmin = currentRoles.Contains(nameof(Roles.Admin));
-            var willRemainAdmin = model.Role == nameof(Roles.Admin);
+            var currentAdminId =
+                User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var currentRoles =
+                await _userManager.GetRolesAsync(user);
+
+            var isCurrentlyAdmin =
+                currentRoles.Contains(nameof(Roles.Admin));
+
+            var willRemainAdmin =
+                model.Role == nameof(Roles.Admin);
 
             if (user.Id == currentAdminId && !willRemainAdmin)
             {
@@ -270,59 +275,142 @@ namespace SweetCakeShop.Controllers
                     "Email này đã được một tài khoản khác sử dụng.");
             }
 
+            var wantsPasswordChange =
+                !string.IsNullOrWhiteSpace(model.NewPassword) ||
+                !string.IsNullOrWhiteSpace(model.ConfirmPassword);
+
+            if (wantsPasswordChange)
+            {
+                if (string.IsNullOrWhiteSpace(model.NewPassword))
+                {
+                    ModelState.AddModelError(
+                        nameof(model.NewPassword),
+                        "Vui lòng nhập mật khẩu mới.");
+                }
+
+                if (string.IsNullOrWhiteSpace(model.ConfirmPassword))
+                {
+                    ModelState.AddModelError(
+                        nameof(model.ConfirmPassword),
+                        "Vui lòng xác nhận mật khẩu mới.");
+                }
+
+                if (!string.IsNullOrWhiteSpace(model.NewPassword))
+                {
+                    foreach (var validator in _userManager.PasswordValidators)
+                    {
+                        var validationResult = await validator.ValidateAsync(
+                            _userManager,
+                            user,
+                            model.NewPassword);
+
+                        if (!validationResult.Succeeded)
+                        {
+                            foreach (var error in validationResult.Errors)
+                            {
+                                ModelState.AddModelError(
+                                    nameof(model.NewPassword),
+                                    error.Description);
+                            }
+                        }
+                    }
+                }
+            }
+
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
 
-            user.Email = normalizedEmail;
-            user.UserName = normalizedEmail;
-            user.PhoneNumber = string.IsNullOrWhiteSpace(model.PhoneNumber)
-                ? null
-                : model.PhoneNumber.Trim();
-            user.EmailConfirmed = model.EmailConfirmed;
+            await using var transaction =
+                await _context.Database.BeginTransactionAsync();
 
-            var updateResult = await _userManager.UpdateAsync(user);
-            if (!updateResult.Succeeded)
+            try
             {
-                AddIdentityErrors(updateResult);
+                user.Email = normalizedEmail;
+                user.UserName = normalizedEmail;
+                user.PhoneNumber =
+                    string.IsNullOrWhiteSpace(model.PhoneNumber)
+                        ? null
+                        : model.PhoneNumber.Trim();
+                user.EmailConfirmed = model.EmailConfirmed;
+
+                var updateResult = await _userManager.UpdateAsync(user);
+                if (!updateResult.Succeeded)
+                {
+                    AddIdentityErrors(updateResult);
+                    await transaction.RollbackAsync();
+                    return View(model);
+                }
+
+                var rolesToRemove = currentRoles
+                    .Where(currentRole =>
+                        !string.Equals(
+                            currentRole,
+                            model.Role,
+                            StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                if (rolesToRemove.Count > 0)
+                {
+                    var removeResult = await _userManager
+                        .RemoveFromRolesAsync(user, rolesToRemove);
+
+                    if (!removeResult.Succeeded)
+                    {
+                        AddIdentityErrors(removeResult);
+                        await transaction.RollbackAsync();
+                        return View(model);
+                    }
+                }
+
+                if (!await _userManager.IsInRoleAsync(user, model.Role))
+                {
+                    var addResult = await _userManager
+                        .AddToRoleAsync(user, model.Role);
+
+                    if (!addResult.Succeeded)
+                    {
+                        AddIdentityErrors(addResult);
+                        await transaction.RollbackAsync();
+                        return View(model);
+                    }
+                }
+
+                if (wantsPasswordChange)
+                {
+                    var resetToken = await _userManager
+                        .GeneratePasswordResetTokenAsync(user);
+
+                    var resetResult = await _userManager.ResetPasswordAsync(
+                        user,
+                        resetToken,
+                        model.NewPassword!);
+
+                    if (!resetResult.Succeeded)
+                    {
+                        AddIdentityErrors(resetResult);
+                        await transaction.RollbackAsync();
+                        return View(model);
+                    }
+                }
+
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+
+                ModelState.AddModelError(
+                    string.Empty,
+                    "Không thể cập nhật tài khoản. Vui lòng thử lại.");
+
                 return View(model);
             }
 
-            var rolesToRemove = currentRoles
-                .Where(currentRole =>
-                    !string.Equals(
-                        currentRole,
-                        model.Role,
-                        StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            if (rolesToRemove.Count > 0)
-            {
-                var removeResult = await _userManager
-                    .RemoveFromRolesAsync(user, rolesToRemove);
-
-                if (!removeResult.Succeeded)
-                {
-                    AddIdentityErrors(removeResult);
-                    return View(model);
-                }
-            }
-
-            if (!await _userManager.IsInRoleAsync(user, model.Role))
-            {
-                var addResult = await _userManager
-                    .AddToRoleAsync(user, model.Role);
-
-                if (!addResult.Succeeded)
-                {
-                    AddIdentityErrors(addResult);
-                    return View(model);
-                }
-            }
-
-            TempData["Success"] =
-                $"Đã cập nhật tài khoản {user.Email}.";
+            TempData["Success"] = wantsPasswordChange
+                ? $"Đã cập nhật tài khoản và mật khẩu của {user.Email}."
+                : $"Đã cập nhật tài khoản {user.Email}.";
 
             return RedirectToAction(
                 nameof(Details),
