@@ -1,8 +1,146 @@
 ﻿@page
 @model ConfirmEmailModel
+
 @{
-    ViewData["Title"] = "Confirm email";
+    ViewData["Title"] = "Xác nhận email";
+
+    var isSuccess =
+            Model.StatusMessage?.Contains("Thank you", StringComparison.OrdinalIgnoreCase) == true
+            || Model.StatusMessage?.Contains("success", StringComparison.OrdinalIgnoreCase) == true
+            || Model.StatusMessage?.Contains("thành công", StringComparison.OrdinalIgnoreCase) == true;
 }
 
-<h1>@ViewData["Title"]</h1>
-<partial name="_StatusMessage" model="Model.StatusMessage" />
+<div class="container py-5">
+    <div class="row justify-content-center align-items-center"
+         style="min-height: 65vh;">
+
+        <div class="col-md-7 col-lg-6">
+            <div class="card border-0 shadow-lg"
+                 style="border-radius: 25px; overflow: hidden;">
+
+                <div style="height: 7px;
+                    background: linear-gradient(
+                    90deg,
+                    #f06292,
+                    #d81b60);">
+                </div>
+
+                <div class="card-body text-center p-4 p-md-5">
+
+                    @if (isSuccess)
+                    {
+                        <div class="d-inline-flex align-items-center
+                            justify-content-center mb-4"
+                             style="width: 90px;
+                            height: 90px;
+                            border-radius: 50%;
+                            background-color: #e8f5e9;
+                            font-size: 3rem;">
+
+                            ✅
+                        </div>
+
+                        <h1 class="mb-3"
+                            style="color: #198754;
+                            font-weight: bold;
+                            font-size: 1.8rem;">
+
+                            Xác nhận email thành công!
+                        </h1>
+
+                        <p class="text-muted mb-4"
+                           style="font-size: 1rem;
+                            line-height: 1.7;">
+
+                            Email của bạn đã được xác nhận.
+                            Bây giờ bạn có thể đăng nhập và sử dụng
+                            đầy đủ các chức năng của SweetCakeShop.
+                        </p>
+
+                        <a asp-page="./Login"
+                           class="btn btn-lg text-white w-100 shadow-sm mb-3"
+                           style="background-color: #d81b60;
+                            border-radius: 12px;
+                            font-weight: bold;
+                            padding: 12px;
+                            border: none;">
+
+                            Đăng nhập ngay
+                        </a>
+
+                        <a asp-area=""
+                           asp-controller="Home"
+                           asp-action="Index"
+                           class="btn btn-outline-secondary w-100"
+                           style="border-radius: 12px;
+                            padding: 11px;
+                            font-weight: 600;">
+
+                            Trở về trang chủ
+                        </a>
+                    }
+                    else
+                    {
+                        <div class="d-inline-flex align-items-center
+                            justify-content-center mb-4"
+                             style="width: 90px;
+                            height: 90px;
+                            border-radius: 50%;
+                            background-color: #fff3cd;
+                            font-size: 3rem;">
+
+                            ⚠️
+                        </div>
+
+                        <h1 class="mb-3"
+                            style="color: #d81b60;
+                            font-weight: bold;
+                            font-size: 1.8rem;">
+
+                            Không thể xác nhận email
+                        </h1>
+
+                        <p class="text-muted mb-4"
+                           style="font-size: 1rem;
+                            line-height: 1.7;">
+
+                            Liên kết xác nhận có thể không hợp lệ,
+                            đã hết hạn hoặc đã được sử dụng trước đó.
+                        </p>
+
+                        @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+                        {
+                            <div class="alert alert-danger text-start"
+                                 role="alert"
+                                 style="border-radius: 12px;">
+
+                                @Model.StatusMessage
+                            </div>
+                        }
+
+                        <a asp-page="./ResendEmailConfirmation"
+                           class="btn btn-lg text-white w-100 shadow-sm mb-3"
+                           style="background-color: #d81b60;
+                            border-radius: 12px;
+                            font-weight: bold;
+                            padding: 12px;
+                            border: none;">
+
+                            Gửi lại email xác nhận
+                        </a>
+
+                        <a asp-page="./Login"
+                           class="btn btn-outline-secondary w-100"
+                           style="border-radius: 12px;
+                            padding: 11px;
+                            font-weight: 600;">
+
+                            Quay lại đăng nhập
+                        </a>
+                    }
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
