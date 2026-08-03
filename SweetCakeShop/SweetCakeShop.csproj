@@ -4,7 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>aspnet-SweetCakeShop-6f3654d7-397d-4293-a119-d679b4278551</UserSecretsId>
+    
   </PropertyGroup>
 
   <ItemGroup>

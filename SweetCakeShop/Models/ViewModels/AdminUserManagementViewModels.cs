@@ -36,8 +36,6 @@ namespace SweetCakeShop.Models.ViewModels
         public string UserName { get; set; } = string.Empty;
         public string? PhoneNumber { get; set; }
         public bool EmailConfirmed { get; set; }
-        public bool TwoFactorEnabled { get; set; }
-        public int AccessFailedCount { get; set; }
         public DateTimeOffset? LockoutEnd { get; set; }
         public IList<string> Roles { get; set; } = new List<string>();
         public IList<Order> Orders { get; set; } = new List<Order>();
@@ -72,5 +70,20 @@ namespace SweetCakeShop.Models.ViewModels
         [Required(ErrorMessage = "Vui lòng chọn vai trò.")]
         [Display(Name = "Vai trò")]
         public string Role { get; set; } = "User";
+
+        [StringLength(
+            100,
+            MinimumLength = 6,
+            ErrorMessage = "Mật khẩu mới phải có từ {2} đến {1} ký tự.")]
+        [DataType(DataType.Password)]
+        [Display(Name = "Mật khẩu mới")]
+        public string? NewPassword { get; set; }
+
+        [DataType(DataType.Password)]
+        [Display(Name = "Xác nhận mật khẩu mới")]
+        [Compare(
+            nameof(NewPassword),
+            ErrorMessage = "Mật khẩu xác nhận không khớp.")]
+        public string? ConfirmPassword { get; set; }
     }
 }

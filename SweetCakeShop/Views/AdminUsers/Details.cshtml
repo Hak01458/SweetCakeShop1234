@@ -75,11 +75,6 @@
                         }
                     </dd>
 
-                    <dt class="col-sm-5">Xác thực 2 bước</dt>
-                    <dd class="col-sm-7">
-                        @(Model.TwoFactorEnabled ? "Đang bật" : "Chưa bật")
-                    </dd>
-
                     <dt class="col-sm-5">Trạng thái</dt>
                     <dd class="col-sm-7">
                         @if (Model.IsLocked)
@@ -91,9 +86,6 @@
                             <span class="badge text-bg-success">Hoạt động</span>
                         }
                     </dd>
-
-                    <dt class="col-sm-5">Đăng nhập sai</dt>
-                    <dd class="col-sm-7">@Model.AccessFailedCount lần</dd>
 
                     <dt class="col-sm-5">Hạng khách hàng</dt>
                     <dd class="col-sm-7">
