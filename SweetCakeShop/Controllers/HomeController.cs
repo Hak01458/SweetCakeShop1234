@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SweetCakeShop.Data;
@@ -43,6 +44,7 @@ namespace SweetCakeShop.Controllers
             return View(new ContactFormViewModel());
         }
 
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> IndexContact(ContactFormViewModel model)
@@ -52,9 +54,7 @@ namespace SweetCakeShop.Controllers
                 return View(model);
             }
 
-            var userId = User.Identity?.IsAuthenticated == true
-                ? User.FindFirstValue(ClaimTypes.NameIdentifier)
-                : null;
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var contactMessage = new ContactMessage
             {
