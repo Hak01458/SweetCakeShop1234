@@ -62,6 +62,35 @@ namespace SweetCakeShop.Services
                 }
             }
 
+            // Apply coupon discount if provided
+            decimal couponDiscount = 0;
+            int? couponId = null;
+
+            if (checkout.CouponId.HasValue && !string.IsNullOrEmpty(userId))
+            {
+                var couponCustomer = await _db.CouponCustomers
+                    .Include(cc => cc.Coupon)
+                    .FirstOrDefaultAsync(cc => cc.CouponCustomerId == checkout.CouponId.Value
+                        && cc.CustomerId == userId
+                        && !cc.IsUsed
+                        && cc.Coupon != null
+                        && cc.Coupon.IsActive);
+
+                if (couponCustomer?.Coupon != null)
+                {
+                    // Check expiry
+                    if (!couponCustomer.Coupon.ExpiryDate.HasValue || 
+                        couponCustomer.Coupon.ExpiryDate.Value.Date >= DateTime.Today)
+                    {
+                        couponDiscount = decimal.Round(
+                            productSubtotal * (couponCustomer.Coupon.DiscountPercent / 100m),
+                            0,
+                            MidpointRounding.AwayFromZero);
+                        couponId = couponCustomer.Coupon.CouponId;
+                    }
+                }
+            }
+
             var order = new Order
             {
                 UserId = userId ?? string.Empty,
