@@ -1,0 +1,134 @@
+@page
+@model MyCouponsModel
+@{
+    ViewData["Title"] = "Kho mã giảm giá";
+    ViewData["ActivePage"] = ManageNavPages.MyCoupons;
+}
+
+<h3 class="mb-3" style="color: #ad1457; font-weight: bold;">
+    <i class="bi bi-ticket-perforated"></i> Kho mã giảm giá
+</h3>
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success py-2">
+        <i class="bi bi-check-circle"></i> @success
+    </div>
+}
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger py-2">
+        <i class="bi bi-exclamation-circle"></i> @error
+    </div>
+}
+
+@if (Model.CouponCustomers.Any())
+{
+    <div class="row g-3">
+        @foreach (var couponCustomer in Model.CouponCustomers)
+        {
+            var coupon = couponCustomer.Coupon;
+            var isExpired = coupon?.ExpiryDate.HasValue == true && coupon.ExpiryDate.Value.Date < DateTime.Today;
+            var isUsed = couponCustomer.IsUsed;
+            var canUse = !isExpired && !isUsed && coupon?.IsActive == true;
+
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card h-100 @(isUsed ? "border-secondary bg-light" : canUse ? "border-success" : "border-danger") position-relative" 
+                     style="border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+
+                    @if (isUsed)
+                    {
+                        <div class="position-absolute top-0 end-0">
+                            <span class="badge bg-secondary rounded-pill m-2">
+                                <i class="bi bi-check-lg"></i> Đã sử dụng
+                            </span>
+                        </div>
+                    }
+                    @if (isExpired && !isUsed)
+                    {
+                        <div class="position-absolute top-0 end-0">
+                            <span class="badge bg-danger rounded-pill m-2">
+                                <i class="bi bi-exclamation-lg"></i> Hết hạn
+                            </span>
+                        </div>
+                    }
+
+                    <div class="card-body">
+                        <h5 class="card-title text-center fw-bold text-primary" style="font-size: 1.8rem; letter-spacing: 2px;">
+                            @coupon?.Code
+                        </h5>
+
+                        <div class="text-center mb-3">
+                            <span class="display-6 text-warning">@coupon?.DiscountPercent%</span>
+                            <p class="text-muted small mb-0">Giảm trên hóa đơn</p>
+                        </div>
+
+                        <hr />
+
+                        <div class="coupon-details small">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Loại khách:</span>
+                                <strong>
+                                    @if (coupon?.CustomerType == "VIP")
+                                    {
+                                        <span class="badge text-bg-warning">VIP Only</span>
+                                    }
+                                </strong>
+                            </div>
+
+                            @if (coupon?.ExpiryDate.HasValue == true)
+                            {
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Hết hạn:</span>
+                                    <strong>@coupon.ExpiryDate?.ToString("dd/MM/yyyy")</strong>
+                                </div>
+                            }
+
+                            @if (isUsed && couponCustomer.UsedDate.HasValue)
+                            {
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Ngày sử dụng:</span>
+                                    <strong>@couponCustomer.UsedDate?.ToString("dd/MM/yyyy HH:mm")</strong>
+                                </div>
+                            }
+
+                            <div class="d-flex justify-content-between">
+                                <span>Nhận:</span>
+                                <strong>@couponCustomer.AssignedDate.ToString("dd/MM/yyyy")</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (canUse)
+                    {
+                        <div class="card-footer bg-light border-top">
+                            <p class="text-success small mb-0 text-center">
+                                <i class="bi bi-check-circle"></i> Sẵn sàng sử dụng
+                            </p>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-info text-center py-4" style="border-radius: 12px;">
+        <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+        <p class="mb-0 mt-2">Bạn chưa có mã giảm giá nào.</p>
+        <small class="text-muted">Hãy liên hệ chúng tôi để nhận các ưu đãi đặc biệt!</small>
+    </div>
+}
+
+<div class="mt-3">
+    <a asp-area="Identity" asp-page="/Account/Manage/Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Quay lại tài khoản
+    </a>
+</div>
+
+<style>
+    .coupon-details small {
+        color: #555;
+    }
+</style>

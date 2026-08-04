@@ -25,5 +25,7 @@
         public string WardCode { get; set; } = string.Empty;
 
         public decimal ShippingFee { get; set; }
+
+        public int? CouponId { get; set; } // Mã giảm giá được chọn
     }
 }

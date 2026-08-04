@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SweetCakeShop.Constants;
@@ -14,12 +15,16 @@ namespace SweetCakeShop.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _env;
         private readonly GhnService _ghnService;
+        private readonly CustomerLoyaltyService _loyaltyService;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public AdminController(ApplicationDbContext context, IWebHostEnvironment env, GhnService ghnService)
+        public AdminController(ApplicationDbContext context, IWebHostEnvironment env, GhnService ghnService, CustomerLoyaltyService loyaltyService, UserManager<IdentityUser> userManager)
         {
             _context = context;
             _env = env;
             _ghnService = ghnService;
+            _loyaltyService = loyaltyService;
+            _userManager = userManager;
         }
 
         // Revenue / Reports
@@ -1041,6 +1046,211 @@ namespace SweetCakeShop.Controllers
                 TempData["Success"] = "Đã xóa đánh giá.";
             }
             return RedirectToAction(nameof(ProductReviews));
+        }
+        #endregion
+
+        #region Coupons
+        [HttpGet]
+        public async Task<IActionResult> Coupons()
+        {
+            var coupons = await _context.Coupons.AsNoTracking().OrderByDescending(c => c.CreatedDate).ToListAsync();
+            return View(coupons);
+        }
+
+        [HttpGet]
+        public IActionResult CreateCoupon()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateCoupon(Coupon model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            // Check if code already exists
+            var exists = await _context.Coupons.AnyAsync(c => c.Code.ToUpper() == model.Code.ToUpper());
+            if (exists)
+            {
+                TempData["Error"] = "Mã giảm giá này đã tồn tại!";
+                return RedirectToAction(nameof(Coupons));
+            }
+
+            model.Code = model.Code.ToUpper();
+            model.CreatedDate = DateTime.Now;
+            model.UpdatedDate = DateTime.Now;
+
+            _context.Coupons.Add(model);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"Thêm mã giảm giá '{model.Code}' thành công.";
+            return RedirectToAction(nameof(Coupons));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> UpdateCoupon(int id)
+        {
+            var coupon = await _context.Coupons.FindAsync(id);
+            if (coupon == null)
+            {
+                TempData["Error"] = "Không tìm thấy mã giảm giá.";
+                return RedirectToAction(nameof(Coupons));
+            }
+
+            return View(coupon);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateCoupon(int id, Coupon model)
+        {
+            if (id != model.CouponId)
+            {
+                TempData["Error"] = "Dữ liệu không hợp lệ.";
+                return RedirectToAction(nameof(Coupons));
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var coupon = await _context.Coupons.FindAsync(id);
+            if (coupon == null)
+            {
+                TempData["Error"] = "Không tìm thấy mã giảm giá.";
+                return RedirectToAction(nameof(Coupons));
+            }
+
+            // Check if new code already exists (if changed)
+            if (coupon.Code != model.Code)
+            {
+                var exists = await _context.Coupons.AnyAsync(c => c.Code.ToUpper() == model.Code.ToUpper() && c.CouponId != id);
+                if (exists)
+                {
+                    TempData["Error"] = "Mã giảm giá này đã tồn tại!";
+                    return RedirectToAction(nameof(UpdateCoupon), new { id });
+                }
+            }
+
+            coupon.Code = model.Code.ToUpper();
+            coupon.DiscountPercent = model.DiscountPercent;
+            coupon.CustomerType = model.CustomerType;
+            coupon.ExpiryDate = model.ExpiryDate;
+            coupon.IsActive = model.IsActive;
+            coupon.UpdatedDate = DateTime.Now;
+
+            _context.Coupons.Update(coupon);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"Cập nhật mã giảm giá '{coupon.Code}' thành công.";
+            return RedirectToAction(nameof(Coupons));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteCoupon(int id)
+        {
+            var coupon = await _context.Coupons.FindAsync(id);
+            if (coupon == null)
+            {
+                TempData["Error"] = "Không tìm thấy mã giảm giá.";
+                return RedirectToAction(nameof(Coupons));
+            }
+
+            var code = coupon.Code;
+            _context.Coupons.Remove(coupon);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"Xóa mã giảm giá '{code}' thành công.";
+            return RedirectToAction(nameof(Coupons));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DistributeCoupon(int couponId, string customerId)
+        {
+            var coupon = await _context.Coupons.FindAsync(couponId);
+            if (coupon == null)
+            {
+                return Json(new { success = false, message = "Không tìm thấy mã giảm giá." });
+            }
+
+            var exists = await _context.CouponCustomers.AnyAsync(cc => cc.CouponId == couponId && cc.CustomerId == customerId);
+            if (exists)
+            {
+                return Json(new { success = false, message = "Khách này đã có mã giảm giá này." });
+            }
+
+            var couponCustomer = new CouponCustomer
+            {
+                CouponId = couponId,
+                CustomerId = customerId,
+                AssignedDate = DateTime.Now,
+                IsUsed = false
+            };
+
+            _context.CouponCustomers.Add(couponCustomer);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = $"Phát hành mã '{coupon.Code}' thành công." });
+        }
+
+        // Tự động phát hành mã giảm giá cho tất cả khách hàng đang là VIP
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DistributeToAllVip(int couponId)
+        {
+            var coupon = await _context.Coupons.FindAsync(couponId);
+            if (coupon == null)
+            {
+                TempData["Error"] = "Không tìm thấy mã giảm giá.";
+                return RedirectToAction(nameof(Coupons));
+            }
+
+            // Danh sách CustomerId đã có sẵn mã này để tránh gán trùng
+            var alreadyHave = await _context.CouponCustomers
+                .Where(cc => cc.CouponId == couponId)
+                .Select(cc => cc.CustomerId)
+                .ToListAsync();
+
+            var newlyAssigned = 0;
+
+            foreach (var user in _userManager.Users.AsNoTracking())
+            {
+                if (alreadyHave.Contains(user.Id))
+                {
+                    continue;
+                }
+
+                var isVip = await _loyaltyService.IsVipAsync(user.Id);
+                if (!isVip)
+                {
+                    continue;
+                }
+
+                _context.CouponCustomers.Add(new CouponCustomer
+                {
+                    CouponId = couponId,
+                    CustomerId = user.Id,
+                    AssignedDate = DateTime.Now,
+                    IsUsed = false
+                });
+
+                newlyAssigned++;
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = newlyAssigned > 0
+                ? $"Đã phát hành mã '{coupon.Code}' cho {newlyAssigned} khách VIP."
+                : $"Không có khách VIP mới nào để phát hành mã '{coupon.Code}' (có thể tất cả khách VIP đã có mã này).";
+
+            return RedirectToAction(nameof(Coupons));
         }
         #endregion
     }

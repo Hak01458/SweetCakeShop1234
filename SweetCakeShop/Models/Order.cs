@@ -29,7 +29,11 @@ namespace SweetCakeShop.Models
 
         public string Status { get; set; } = "COD";
 
+        public int? CouponId { get; set; } // FK to Coupon (nullable)
+
         public IdentityUser? User { get; set; }
+
+        public Coupon? Coupon { get; set; }
 
         public ICollection<OrderDetail> OrderDetails { get; set; }
             = new List<OrderDetail>();
