@@ -89,8 +89,11 @@ namespace SweetCakeShop
                 {
                     StripeConfiguration.ApiKey = stripeSecret;
                 }
+            builder.Services.Configure<VnPaySettings>(
+            builder.Configuration.GetSection("VnPay"));
 
-                var app = builder.Build();
+            builder.Services.AddScoped<IVnPayService, VnPayService>();
+            var app = builder.Build();
 
                 // Seed database với dữ liệu mẫu
                 using (var scope = app.Services.CreateScope())

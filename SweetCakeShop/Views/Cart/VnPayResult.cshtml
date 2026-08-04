@@ -1,0 +1,111 @@
+﻿@model SweetCakeShop.Models.ViewModels.VnPayResultViewModel
+
+@{
+    ViewData["Title"] = "Kết quả thanh toán VNPAY";
+    var success = Model.Result.IsValidSignature &&
+                  Model.Result.IsSuccess &&
+                  Model.Order != null;
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-9 col-lg-7">
+            <div class="card border-0 shadow-lg"
+                 style="border-radius: 22px; overflow: hidden;">
+
+                <div style="height: 8px;
+                    background: @(success ? "#198754" : "#dc3545");">
+                </div>
+
+                <div class="card-body p-4 p-md-5 text-center">
+                    <div class="mb-3" style="font-size: 3.5rem;">
+                        @(success ? "✅" : "❌")
+                    </div>
+
+                    <h1 class="h3 mb-3 @(success ? "text-success" : "text-danger")">
+                        @(success
+                            ? "Thanh toán VNPAY thành công"
+                            : "Thanh toán VNPAY chưa thành công")
+                    </h1>
+
+                    <p class="text-muted mb-4">
+                        @Model.DisplayMessage
+                    </p>
+
+                    <div class="text-start bg-light rounded-3 p-3 mb-4">
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <small class="text-muted d-block">Mã đơn hàng</small>
+                                <strong>#@(Model.Order?.OrderId.ToString() ?? "Không xác định")</strong>
+                            </div>
+
+                            <div class="col-sm-6">
+                                <small class="text-muted d-block">Số tiền</small>
+                                <strong>@Model.Result.Amount.ToString("N0") ₫</strong>
+                            </div>
+
+                            <div class="col-sm-6">
+                                <small class="text-muted d-block">Mã giao dịch VNPAY</small>
+                                <strong>
+                                    @(string.IsNullOrWhiteSpace(Model.Result.TransactionNumber)
+                                    ? "Không có"
+                                    : Model.Result.TransactionNumber)
+                                </strong>
+                            </div>
+
+                            <div class="col-sm-6">
+                                <small class="text-muted d-block">Ngân hàng</small>
+                                <strong>
+                                    @(string.IsNullOrWhiteSpace(Model.Result.BankCode)
+                                    ? "Không có"
+                                    : Model.Result.BankCode)
+                                </strong>
+                            </div>
+
+                            <div class="col-sm-6">
+                                <small class="text-muted d-block">Mã phản hồi</small>
+                                <strong>
+                                    @(string.IsNullOrWhiteSpace(Model.Result.ResponseCode)
+                                    ? "Không có"
+                                    : Model.Result.ResponseCode)
+                                </strong>
+                            </div>
+
+                            <div class="col-sm-6">
+                                <small class="text-muted d-block">Kiểm tra chữ ký</small>
+                                <strong class="@(Model.Result.IsValidSignature ? "text-success" : "text-danger")">
+                                    @(Model.Result.IsValidSignature ? "Hợp lệ" : "Không hợp lệ")
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (success && Model.Order != null)
+                    {
+                        <a asp-controller="Cart"
+                           asp-action="Success"
+                           asp-route-orderId="@Model.Order.OrderId"
+                           class="btn btn-success btn-lg w-100 mb-2">
+                            Xem đơn hàng
+                        </a>
+                    }
+                    else if (Model.Order != null)
+                    {
+                        <a asp-controller="Cart"
+                           asp-action="Payment"
+                           asp-route-orderId="@Model.Order.OrderId"
+                           class="btn btn-primary btn-lg w-100 mb-2">
+                            Thử thanh toán lại
+                        </a>
+                    }
+
+                    <a asp-controller="Home"
+                       asp-action="Index"
+                       class="btn btn-outline-secondary w-100">
+                        Trở về trang chủ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -9,6 +9,7 @@ using System.Security.Claims;
 using Stripe.Checkout;
 using Stripe;
 using System.Threading.Tasks;
+using System.Text.Json;
 
 namespace SweetCakeShop.Controllers
 {
@@ -21,6 +22,7 @@ namespace SweetCakeShop.Controllers
         private readonly IPaymentService _paymentService;
         private readonly GhnService _ghnService;
         private readonly OrderEmailService _orderEmailService;
+        private readonly IVnPayService _vnPayService;
         public CartController(
     ApplicationDbContext context,
     CartService cartService,
@@ -28,7 +30,8 @@ namespace SweetCakeShop.Controllers
     IPaymentService paymentService,
     GhnService ghnService,
     CustomerLoyaltyService customerLoyaltyService,
-    OrderEmailService orderEmailService)
+    OrderEmailService orderEmailService,
+    IVnPayService vnPayService)
         {
             _context = context;
             _cartService = cartService;
@@ -37,6 +40,7 @@ namespace SweetCakeShop.Controllers
             _ghnService = ghnService;
             _customerLoyaltyService = customerLoyaltyService;
             _orderEmailService = orderEmailService;
+            _vnPayService = vnPayService;
         }
 
         public IActionResult Index()
@@ -136,7 +140,7 @@ namespace SweetCakeShop.Controllers
         public async Task<IActionResult> CheckoutConfirm(CheckoutViewModel checkout)
         {
             var cart = _cartService.GetCart();
-            if (!cart.Items.Any())  
+            if (!cart.Items.Any())
                 return RedirectToAction("Index");
 
             string? userId = null;
@@ -194,7 +198,38 @@ namespace SweetCakeShop.Controllers
                     "Success",
                     new { orderId = order.OrderId });
             }
-            else if (method == "Online")
+            else if (method == "VNPAY")
+            {
+                try
+                {
+                    var fallbackReturnUrl = Url.Action(
+                        nameof(VnPayReturn),
+                        "Cart",
+                        values: null,
+                        protocol: Request.Scheme) ?? string.Empty;
+
+                    var paymentUrl = _vnPayService.CreatePaymentUrl(
+                        order,
+                        HttpContext,
+                        fallbackReturnUrl);
+
+                    order.Status = "PendingPayment";
+                    await _context.SaveChangesAsync();
+
+                    return Redirect(paymentUrl);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    order.Status = "PaymentFailed";
+                    await _context.SaveChangesAsync();
+
+                    TempData["Error"] = ex.Message;
+                    return RedirectToAction(
+                        nameof(Payment),
+                        new { orderId = order.OrderId });
+                }
+            }
+            else if (method == "Online" || method == "STRIPE")
             {
                 // Build success/cancel URLs that Stripe will redirect to.
                 // Use Stripe's placeholder {CHECKOUT_SESSION_ID} so we can verify the session on return.
@@ -321,6 +356,149 @@ namespace SweetCakeShop.Controllers
 
             return View(order);
         }
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> VnPayReturn()
+        {
+            var callback = _vnPayService.ReadCallback(Request.Query);
+            Order? order = null;
+            var displayMessage = callback.Message;
+
+            if (callback.OrderId.HasValue)
+            {
+                order = await _context.Orders
+                    .Include(o => o.OrderDetails)
+                    .FirstOrDefaultAsync(
+                        o => o.OrderId == callback.OrderId.Value);
+            }
+
+            if (!callback.IsValidSignature)
+            {
+                displayMessage =
+                    "Chu ky VNPAY khong hop le. Giao dich khong duoc ghi nhan.";
+            }
+            else if (order == null)
+            {
+                displayMessage = "Khong tim thay don hang tu ma giao dich VNPAY.";
+            }
+            else if (decimal.Round(order.TotalPrice, 0) !=
+                     decimal.Round(callback.Amount, 0))
+            {
+                displayMessage =
+                    "So tien VNPAY tra ve khong khop voi tong tien don hang.";
+            }
+            else if (callback.IsSuccess)
+            {
+                // IPN la kenh cap nhat chinh. Doan nay xu ly idempotent
+                // de moi truong demo van hoat dong neu IPN den cham.
+                if (order.Status != "Confirmed")
+                {
+                    order.Status = "Confirmed";
+                    await _context.SaveChangesAsync();
+
+                    await _orderEmailService
+                        .SendOrderConfirmationAsync(order.OrderId);
+                }
+
+                displayMessage = "Thanh toan VNPAY thanh cong.";
+            }
+            else if (order.Status == "PendingPayment")
+            {
+                order.Status = "PaymentFailed";
+                await _context.SaveChangesAsync();
+            }
+
+            return View(
+                "VnPayResult",
+                new VnPayResultViewModel
+                {
+                    Order = order,
+                    Result = callback,
+                    DisplayMessage = displayMessage
+                });
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> VnPayIpn()
+        {
+            try
+            {
+                var callback = _vnPayService.ReadCallback(Request.Query);
+
+                if (!callback.IsValidSignature)
+                {
+                    return CreateVnPayIpnResponse("97", "Invalid signature");
+                }
+
+                if (!callback.OrderId.HasValue)
+                {
+                    return CreateVnPayIpnResponse("01", "Order not found");
+                }
+
+                var order = await _context.Orders
+                    .FirstOrDefaultAsync(
+                        o => o.OrderId == callback.OrderId.Value);
+
+                if (order == null)
+                {
+                    return CreateVnPayIpnResponse("01", "Order not found");
+                }
+
+                if (decimal.Round(order.TotalPrice, 0) !=
+                    decimal.Round(callback.Amount, 0))
+                {
+                    return CreateVnPayIpnResponse("04", "Invalid amount");
+                }
+
+                if (order.Status == "Confirmed")
+                {
+                    return CreateVnPayIpnResponse("02", "Order already confirmed");
+                }
+
+                order.Status = callback.IsSuccess
+                    ? "Confirmed"
+                    : "PaymentFailed";
+
+                await _context.SaveChangesAsync();
+
+                if (callback.IsSuccess)
+                {
+                    await _orderEmailService
+                        .SendOrderConfirmationAsync(order.OrderId);
+                }
+
+                return CreateVnPayIpnResponse("00", "Confirm Success");
+            }
+            catch (Exception)
+            {
+                return CreateVnPayIpnResponse("99", "Unknown error");
+            }
+        }
+
+        private static ContentResult CreateVnPayIpnResponse(
+            string responseCode,
+            string message)
+        {
+            var json = JsonSerializer.Serialize(
+                new
+                {
+                    RspCode = responseCode,
+                    Message = message
+                },
+                new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = null
+                });
+
+            return new ContentResult
+            {
+                Content = json,
+                ContentType = "application/json; charset=utf-8",
+                StatusCode = StatusCodes.Status200OK
+            };
+        }
+
         [HttpGet]
         public async Task<IActionResult> CalculateShippingFee(int districtId, string wardCode)
         {

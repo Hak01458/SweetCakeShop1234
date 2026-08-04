@@ -28,8 +28,20 @@
                 <div class="form-floating mb-3">
                     <input asp-for="Email" class="form-control" style="border-radius: 12px; background-color: #f8f9fa;" placeholder="Email hiện tại" disabled />
                     <label asp-for="Email" class="form-label">Email hiện tại</label>
-                    <button id="email-verification" type="submit" asp-page-handler="SendVerificationEmail" class="btn btn-link mt-1" style="color: #d81b60; font-weight: bold; text-decoration: none;">
-                        Gửi email xác thực
+                    <button id="email-verification"
+                            type="submit"
+                            asp-page-handler="SendVerificationEmail"
+                            formnovalidate
+                            class="btn w-100 mt-2"
+                            style="
+                        color: #d81b60;
+                        background-color: #fff0f5;
+                        border: 1px solid #f8bbd0;
+                        border-radius: 12px;
+                        font-weight: bold;
+                        padding: 11px;">
+
+                        ✉ Gửi email xác nhận
                     </button>
                 </div>
             }

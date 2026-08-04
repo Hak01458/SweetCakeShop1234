@@ -1,12 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-#nullable disable
+﻿#nullable disable
 
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -21,37 +17,41 @@ namespace SweetCakeShop.Areas.Identity.Pages.Account
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IEmailSender _emailSender;
+        private readonly ILogger<ResendEmailConfirmationModel> _logger;
 
-        public ResendEmailConfirmationModel(UserManager<IdentityUser> userManager, IEmailSender emailSender)
+        public ResendEmailConfirmationModel(
+            UserManager<IdentityUser> userManager,
+            IEmailSender emailSender,
+            ILogger<ResendEmailConfirmationModel> logger)
         {
             _userManager = userManager;
             _emailSender = emailSender;
+            _logger = logger;
         }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         [BindProperty]
-        public InputModel Input { get; set; }
+        public InputModel Input { get; set; } = new();
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
+        [TempData]
+        public string StatusMessage { get; set; }
+
+        [TempData]
+        public string StatusType { get; set; }
+
         public class InputModel
         {
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
-            [Required]
-            [EmailAddress]
+            [Required(ErrorMessage = "Vui lòng nhập email.")]
+            [EmailAddress(ErrorMessage = "Email không đúng định dạng.")]
+            [Display(Name = "Email")]
             public string Email { get; set; }
         }
 
-        public void OnGet()
+        public void OnGet(string email = null)
         {
+            if (!string.IsNullOrWhiteSpace(email))
+            {
+                Input.Email = email;
+            }
         }
 
         public async Task<IActionResult> OnPostAsync()
@@ -61,28 +61,144 @@ namespace SweetCakeShop.Areas.Identity.Pages.Account
                 return Page();
             }
 
-            var user = await _userManager.FindByEmailAsync(Input.Email);
+            var email = Input.Email.Trim();
+
+            var user = await _userManager.FindByEmailAsync(email);
+
             if (user == null)
             {
-                ModelState.AddModelError(string.Empty, "Verification email sent. Please check your email.");
-                return Page();
+                StatusMessage =
+                    "Không tìm thấy tài khoản nào đăng ký bằng email này.";
+
+                StatusType = "error";
+
+                return RedirectToPage();
             }
 
-            var userId = await _userManager.GetUserIdAsync(user);
-            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-            var callbackUrl = Url.Page(
-                "/Account/ConfirmEmail",
-                pageHandler: null,
-                values: new { userId = userId, code = code },
-                protocol: Request.Scheme);
-            await _emailSender.SendEmailAsync(
-                Input.Email,
-                "Confirm your email",
-                $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+            var emailConfirmed =
+                await _userManager.IsEmailConfirmedAsync(user);
 
-            ModelState.AddModelError(string.Empty, "Verification email sent. Please check your email.");
-            return Page();
+            if (emailConfirmed)
+            {
+                StatusMessage =
+                    "Email này đã được xác nhận. Bạn có thể đăng nhập ngay.";
+
+                StatusType = "info";
+
+                return RedirectToPage();
+            }
+
+            try
+            {
+                var userId =
+                    await _userManager.GetUserIdAsync(user);
+
+                var code =
+                    await _userManager
+                        .GenerateEmailConfirmationTokenAsync(user);
+
+                code = WebEncoders.Base64UrlEncode(
+                    Encoding.UTF8.GetBytes(code));
+
+                var callbackUrl = Url.Page(
+                    "/Account/ConfirmEmail",
+                    pageHandler: null,
+                    values: new
+                    {
+                        area = "Identity",
+                        userId,
+                        code
+                    },
+                    protocol: Request.Scheme);
+
+                if (string.IsNullOrWhiteSpace(callbackUrl))
+                {
+                    throw new InvalidOperationException(
+                        "Không thể tạo đường dẫn xác nhận email.");
+                }
+
+                var safeCallbackUrl =
+                    HtmlEncoder.Default.Encode(callbackUrl);
+
+                var htmlMessage = $"""
+                <!DOCTYPE html>
+                <html lang="vi">
+                <body style="font-family: Arial, sans-serif;
+                             background-color: #fff7fa;
+                             padding: 30px;">
+
+                    <div style="max-width: 600px;
+                                margin: auto;
+                                background-color: white;
+                                padding: 30px;
+                                border-radius: 18px;
+                                box-shadow: 0 5px 20px rgba(0,0,0,0.08);">
+
+                        <h2 style="color: #d81b60;">
+                            Xác nhận tài khoản SweetCakeShop
+                        </h2>
+
+                        <p>
+                            Bạn vừa yêu cầu gửi lại liên kết xác nhận email.
+                        </p>
+
+                        <p>
+                            Nhấn vào nút bên dưới để xác nhận tài khoản:
+                        </p>
+
+                        <p style="text-align: center;
+                                  margin: 30px 0;">
+
+                            <a href="{safeCallbackUrl}"
+                               style="display: inline-block;
+                                      background-color: #d81b60;
+                                      color: white;
+                                      padding: 13px 25px;
+                                      border-radius: 10px;
+                                      text-decoration: none;
+                                      font-weight: bold;">
+
+                                Xác nhận email
+                            </a>
+                        </p>
+
+                        <p style="color: #777;
+                                  font-size: 14px;">
+
+                            Nếu bạn không yêu cầu email này,
+                            bạn có thể bỏ qua.
+                        </p>
+                    </div>
+                </body>
+                </html>
+                """;
+
+                await _emailSender.SendEmailAsync(
+                    email,
+                    "Xác nhận tài khoản SweetCakeShop",
+                    htmlMessage);
+
+                StatusMessage =
+                    "Đã gửi email xác nhận. Hãy kiểm tra Hộp thư đến, Spam và Quảng cáo.";
+
+                StatusType = "success";
+
+                return RedirectToPage();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Không thể gửi lại email xác nhận cho {Email}.",
+                    email);
+
+                StatusMessage =
+                    "Không thể gửi email xác nhận. Hãy kiểm tra cấu hình Gmail hoặc thử lại.";
+
+                StatusType = "error";
+
+                return RedirectToPage();
+            }
         }
     }
 }
