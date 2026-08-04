@@ -4,6 +4,7 @@ using SweetCakeShop.Data;
 using SweetCakeShop.Models;
 using SweetCakeShop.Models.ViewModels;
 using System.Diagnostics;
+using System.Security.Claims;
 
 namespace SweetCakeShop.Controllers
 {
@@ -44,12 +45,30 @@ namespace SweetCakeShop.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult IndexContact(ContactFormViewModel model)
+        public async Task<IActionResult> IndexContact(ContactFormViewModel model)
         {
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
+
+            var userId = User.Identity?.IsAuthenticated == true
+                ? User.FindFirstValue(ClaimTypes.NameIdentifier)
+                : null;
+
+            var contactMessage = new ContactMessage
+            {
+                UserId = userId,
+                Name = model.Name,
+                Email = model.Email,
+                Phone = model.Phone,
+                Subject = model.Subject,
+                Message = model.Message,
+                CreatedAt = DateTime.Now
+            };
+
+            _context.ContactMessages.Add(contactMessage);
+            await _context.SaveChangesAsync();
 
             TempData["ContactSuccess"] = "Gửi tin nhắn thành công! Chúng tôi sẽ phản hồi trong thời gian sớm nhất.";
             return RedirectToAction(nameof(IndexContact));

@@ -215,6 +215,13 @@
                                 Quản lý người dùng
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(new[] { "CustomerCare", "ContactMessages", "ContactMessageDetail" }.Contains(ViewContext.RouteData.Values["action"]?.ToString()) ? "active-cake" : "")"
+                               asp-controller="Admin" asp-action="CustomerCare">
+                                <i class="bi bi-chat-dots"></i>
+                                Chăm sóc khách hàng
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </aside>

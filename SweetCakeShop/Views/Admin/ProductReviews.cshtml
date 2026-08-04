@@ -1,0 +1,72 @@
+﻿@model List<SweetCakeShop.Models.ProductReview>
+
+@{
+    ViewData["Title"] = "Đánh giá sản phẩm";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold mb-0">Đánh giá sản phẩm</h1>
+        <a asp-controller="Admin" asp-action="CustomerCare" class="btn btn-outline-secondary">← Chăm sóc khách hàng</a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">Chưa có đánh giá nào từ khách hàng.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Sản phẩm</th>
+                        <th>Khách hàng</th>
+                        <th>Đánh giá</th>
+                        <th>Nội dung</th>
+                        <th>Ngày gửi</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var review in Model)
+                    {
+                        <tr>
+                            <td class="fw-bold">@(review.Product?.ProductName ?? "(Sản phẩm đã bị xóa)")</td>
+                            <td>@(review.User?.Email ?? review.User?.UserName ?? "(Ẩn danh)")</td>
+                            <td>
+                                @for (int i = 0; i < 5; i++)
+                                {
+                                    if (i < review.Rating)
+                                    {
+                                        <span class="text-warning">★</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">★</span>
+                                    }
+                                }
+                            </td>
+                            <td style="max-width:350px;">@(review.Comment ?? "(Không có nội dung)")</td>
+                            <td>@review.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                <form asp-controller="Admin" asp-action="DeleteReview" method="post"
+                                      onsubmit="return confirm('Xóa đánh giá này?');">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@review.ReviewId" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

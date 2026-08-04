@@ -5,7 +5,7 @@ using SweetCakeShop.Constants;
 using SweetCakeShop.Data;
 using SweetCakeShop.Models;
 using SweetCakeShop.Services;
-using SweetCakeShop.Models.ViewModels   ;
+using SweetCakeShop.Models.ViewModels;
 namespace SweetCakeShop.Controllers
 {
     [Authorize(Roles = nameof(Roles.Admin))]
@@ -490,7 +490,7 @@ namespace SweetCakeShop.Controllers
             string measurement,
             decimal addAmount = 0,
             decimal subtractAmount = 0,
-            DateTime? importDate = null, 
+            DateTime? importDate = null,
             DateTime? expiryDate = null)
         {
             var ingredient = await _context.Ingredients.FindAsync(ingredientId);
@@ -932,6 +932,116 @@ namespace SweetCakeShop.Controllers
             return $"/uploads/products/{fileName}";
         }
 
+        #endregion
+
+        #region Contact Message Management
+        [HttpGet]
+        public IActionResult CustomerCare()
+        {
+            ViewBag.UnreadContactCount = _context.ContactMessages.Count(m => !m.IsReadByAdmin);
+            ViewBag.TotalContactCount = _context.ContactMessages.Count();
+            ViewBag.TotalReviewCount = _context.ProductReviews.Count();
+            return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ContactMessages()
+        {
+            var messages = await _context.ContactMessages
+                .OrderByDescending(m => m.CreatedAt)
+                .ToListAsync();
+
+            return View(messages);
+        }
+
+
+
+        [HttpGet]
+        public async Task<IActionResult> ContactMessageDetail(int id)
+        {
+            var message = await _context.ContactMessages.FindAsync(id);
+            if (message == null)
+            {
+                return NotFound();
+            }
+
+            // Đánh dấu đã đọc ngay khi Admin mở xem chi tiết
+            if (!message.IsReadByAdmin)
+            {
+                message.IsReadByAdmin = true;
+                await _context.SaveChangesAsync();
+            }
+
+            return View(message);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ReplyMessage(int contactMessageId, string adminReply)
+        {
+            if (string.IsNullOrWhiteSpace(adminReply))
+            {
+                TempData["Error"] = "Nội dung phản hồi không được để trống";
+                return RedirectToAction(nameof(ContactMessageDetail), new { id = contactMessageId });
+            }
+
+            var message = await _context.ContactMessages.FindAsync(contactMessageId);
+            if (message == null)
+            {
+                TempData["Error"] = "Không tìm thấy tin nhắn";
+                return RedirectToAction(nameof(ContactMessages));
+            }
+
+            message.AdminReply = adminReply.Trim();
+            message.RepliedAt = DateTime.Now;
+            message.IsReadByCustomer = false; // để khách thấy badge "phản hồi mới"
+
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Đã gửi phản hồi cho khách hàng";
+            return RedirectToAction(nameof(ContactMessageDetail), new { id = contactMessageId });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteMessage(int contactMessageId)
+        {
+            var message = await _context.ContactMessages.FindAsync(contactMessageId);
+            if (message != null)
+            {
+                _context.ContactMessages.Remove(message);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Đã xóa tin nhắn";
+            }
+            return RedirectToAction(nameof(ContactMessages));
+        }
+        #endregion
+
+        #region Product Review Management
+        [HttpGet]
+        public async Task<IActionResult> ProductReviews()
+        {
+            var reviews = await _context.ProductReviews
+                .Include(r => r.Product)
+                .Include(r => r.User)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+
+            return View(reviews);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteReview(int id)
+        {
+            var review = await _context.ProductReviews.FindAsync(id);
+            if (review != null)
+            {
+                _context.ProductReviews.Remove(review);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Đã xóa đánh giá.";
+            }
+            return RedirectToAction(nameof(ProductReviews));
+        }
         #endregion
     }
 }

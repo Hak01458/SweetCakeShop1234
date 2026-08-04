@@ -1,0 +1,50 @@
+﻿@page
+@model SweetCakeShop.Areas.Identity.Pages.Account.Manage.MessagesModel
+@{
+    ViewData["Title"] = "Tin nhắn";
+    ViewData["ActivePage"] = ManageNavPages.Messages;
+}
+
+<h3 class="mb-3" style="color: #ad1457; font-weight: bold;">@ViewData["Title"]</h3>
+
+@if (!Model.Messages.Any())
+{
+    <div class="alert alert-info">
+        Bạn chưa gửi tin nhắn liên hệ nào. <a asp-area="" asp-controller="Home" asp-action="Contact">Gửi liên hệ ngay</a>
+    </div>
+}
+
+@foreach (var msg in Model.Messages)
+{
+    var hasReply = !string.IsNullOrWhiteSpace(msg.AdminReply);
+    <div class="border rounded-3 p-3 mb-3 shadow-sm">
+        <div class="d-flex justify-content-between flex-wrap">
+            @if (!string.IsNullOrWhiteSpace(msg.Subject))
+            {
+                <strong>@msg.Subject</strong>
+            }
+            else
+            {
+                <strong>Tin nhắn liên hệ</strong>
+            }
+            <span class="text-muted small">@msg.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+        </div>
+
+        <p class="mt-2 mb-2">@msg.Message</p>
+
+        @if (hasReply)
+        {
+            <div class="rounded-3 p-3" style="background-color:#fff0f5;">
+                <div class="small fw-semibold mb-1" style="color:#d81b60;">
+                    <i class="bi bi-reply-fill"></i> Phản hồi từ SweetCake
+                    <span class="text-muted fw-normal">(@msg.RepliedAt?.ToString("dd/MM/yyyy HH:mm"))</span>
+                </div>
+                <div>@msg.AdminReply</div>
+            </div>
+        }
+        else
+        {
+            <div class="text-muted small"><i class="bi bi-hourglass-split"></i> Đang chờ shop phản hồi...</div>
+        }
+    </div>
+}

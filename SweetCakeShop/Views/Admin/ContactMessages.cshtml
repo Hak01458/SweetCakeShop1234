@@ -1,0 +1,75 @@
+﻿@model List<SweetCakeShop.Models.ContactMessage>
+
+@{
+    ViewData["Title"] = "Phản hồi khách hàng";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold mb-0">Phản hồi khách hàng</h1>
+        <a asp-controller="Admin" asp-action="CustomerCare" class="btn btn-outline-secondary">← Chăm sóc khách hàng</a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">Chưa có tin nhắn liên hệ nào.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th></th>
+                        <th>Họ tên</th>
+                        <th>Email</th>
+                        <th>Chủ đề</th>
+                        <th>Ngày gửi</th>
+                        <th>Trạng thái</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var msg in Model)
+                    {
+                        <tr class="@(!msg.IsReadByAdmin ? "fw-bold" : "")">
+                            <td>
+                                @if (!msg.IsReadByAdmin)
+                                {
+                                    <span class="badge bg-danger">Mới</span>
+                                }
+                            </td>
+                            <td>@msg.Name</td>
+                            <td>@msg.Email</td>
+                            <td>@(string.IsNullOrEmpty(msg.Subject) ? "(Không có)" : msg.Subject)</td>
+                            <td>@msg.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                @if (msg.RepliedAt != null)
+                                {
+                                    <span class="badge bg-success">Đã phản hồi</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Chưa phản hồi</span>
+                                }
+                            </td>
+                            <td>
+                                <a asp-controller="Admin" asp-action="ContactMessageDetail" asp-route-id="@msg.ContactMessageId" class="btn btn-sm btn-primary">Xem / Trả lời</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
