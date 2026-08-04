@@ -20,6 +20,8 @@ namespace SweetCakeShop.Data
         public DbSet<Recipe> Recipes { get; set; } // NEW
         public DbSet<ProductReview> ProductReviews { get; set; }
         public DbSet<ContactMessage> ContactMessages { get; set; }
+        public DbSet<Coupon> Coupons { get; set; }
+        public DbSet<CouponCustomer> CouponCustomers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -91,6 +93,41 @@ namespace SweetCakeShop.Data
                 .HasOne(m => m.User)
                 .WithMany()
                 .HasForeignKey(m => m.UserId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Coupon relationships
+            builder.Entity<Coupon>()
+                .HasKey(c => c.CouponId);
+
+            builder.Entity<Coupon>()
+                .Property(c => c.DiscountPercent)
+                .HasPrecision(5, 2);
+
+            builder.Entity<Coupon>()
+                .HasIndex(c => c.Code)
+                .IsUnique();
+
+            builder.Entity<CouponCustomer>()
+                .HasKey(cc => cc.CouponCustomerId);
+
+            builder.Entity<CouponCustomer>()
+                .HasOne(cc => cc.Coupon)
+                .WithMany(c => c.CouponCustomers)
+                .HasForeignKey(cc => cc.CouponId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<CouponCustomer>()
+                .HasOne(cc => cc.Customer)
+                .WithMany()
+                .HasForeignKey(cc => cc.CustomerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Order to Coupon relationship
+            builder.Entity<Order>()
+                .HasOne(o => o.Coupon)
+                .WithMany(c => c.Orders)
+                .HasForeignKey(o => o.CouponId)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.SetNull);
         }
