@@ -19,6 +19,11 @@
     <li class="nav-item mb-2">
         <a class="nav-link @ManageNavPages.OrdersNavClass(ViewContext) pink-nav" id="orders" asp-page="./Orders">Lịch sử mua hàng</a>
     </li>
+    <li class="nav-item mb-2">
+        <a class="nav-link @ManageNavPages.MyCouponsNavClass(ViewContext) pink-nav" id="mycoupons" asp-page="./MyCoupons">
+            <i class="bi bi-ticket-perforated"></i> Kho mã giảm giá
+        </a>
+    </li>
     @if (hasExternalLogins)
     {
         <li id="external-logins" class="nav-item mb-2">

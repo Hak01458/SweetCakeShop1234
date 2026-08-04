@@ -50,6 +50,7 @@ namespace  SweetCakeShop.Areas.Identity.Pages.Account.Manage
         public static string ExternalLogins => "ExternalLogins";
         public static string Orders => "Orders";
         public static string Messages => "Messages";
+        public static string MyCoupons => "MyCoupons";
 
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -105,6 +106,7 @@ namespace  SweetCakeShop.Areas.Identity.Pages.Account.Manage
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public static string MessagesNavClass(ViewContext viewContext) => PageNavClass(viewContext, Messages);
+        public static string MyCouponsNavClass(ViewContext viewContext) => PageNavClass(viewContext, MyCoupons);
         public static string PersonalDataNavClass(ViewContext viewContext) => PageNavClass(viewContext, PersonalData);
 
         /// <summary>

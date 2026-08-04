@@ -188,6 +188,13 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Coupons" ? "active-cake" : "")"
+                               asp-controller="Admin" asp-action="Coupons">
+                                <i class="bi bi-ticket-perforated"></i>
+                                Mã giảm giá
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Products" ? "active-cake" : "")"
                                asp-controller="Admin" asp-action="Products">
                                 <i class="bi bi-cookie"></i>

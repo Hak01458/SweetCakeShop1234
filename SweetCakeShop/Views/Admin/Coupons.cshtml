@@ -1,0 +1,152 @@
+@model IEnumerable<SweetCakeShop.Models.Coupon>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Quản lý mã giảm giá";
+}
+
+<div class="container-fluid px-0">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Danh sách mã giảm giá</h5>
+            <a asp-action="CreateCoupon" asp-controller="Admin" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-circle"></i> Thêm mã giảm giá
+            </a>
+        </div>
+        <div class="card-body">
+            @if (TempData["Success"] is string success)
+            {
+                <div class="alert alert-success py-2">@success</div>
+            }
+            @if (TempData["Error"] is string error)
+            {
+                <div class="alert alert-danger py-2">@error</div>
+            }
+
+            @if (Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th style="width: 120px;">Mã coupon</th>
+                                <th>Loại khách</th>
+                                <th style="width: 80px;">Giảm (%)</th>
+                                <th style="width: 100px;">Hết hạn</th>
+                                <th style="width: 80px;">Trạng thái</th>
+                                <th class="text-end" style="width: 180px;">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var coupon in Model)
+                            {
+                                var isExpired = coupon.ExpiryDate.HasValue && coupon.ExpiryDate.Value.Date < DateTime.Today;
+                                var rowClass = isExpired ? "table-secondary" : "";
+
+                                <tr class="@rowClass">
+                                    <td>
+                                        <strong>@coupon.Code</strong>
+                                    </td>
+                                    <td>
+                                        @if (coupon.CustomerType == "VIP")
+                                        {
+                                            <span class="badge text-bg-warning">VIP Only</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge text-bg-info">Tất cả</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">@coupon.DiscountPercent%</td>
+                                    <td>@(coupon.ExpiryDate?.ToString("dd/MM/yyyy") ?? "Không giới hạn")</td>
+                                    <td>
+                                        @if (coupon.IsActive && !isExpired)
+                                        {
+                                            <span class="badge text-bg-success">Đang dùng</span>
+                                        }
+                                        else if (isExpired)
+                                        {
+                                            <span class="badge text-bg-danger">Hết hạn</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge text-bg-secondary">Tắt</span>
+                                        }
+                                    </td>
+                                    <td class="text-end">
+                                        <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#distributeModal@coupon.CouponId" title="Phát hành cho khách VIP">
+                                            <i class="bi bi-send"></i> Phát hành
+                                        </button>
+                                        <a asp-action="UpdateCoupon" asp-controller="Admin" asp-route-id="@coupon.CouponId" class="btn btn-sm btn-primary" title="Chỉnh sửa">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal@coupon.CouponId" title="Xóa">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">Chưa có mã giảm giá nào.</div>
+            }
+        </div>
+    </div>
+</div>
+
+@* Distribute (phát hành cho khách VIP) Modals *@
+@foreach (var coupon in Model)
+{
+    <div class="modal fade" id="distributeModal@coupon.CouponId" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Phát hành mã giảm giá</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    Phát hành mã <strong>@coupon.Code</strong> (giảm @coupon.DiscountPercent%) cho <strong>tất cả khách hàng đang là VIP</strong>?
+                    <br />
+                    <small class="text-muted">Mã sẽ xuất hiện trong "Kho giảm giá" của các khách VIP và có thể áp dụng khi thanh toán. Khách đã có mã này sẽ được bỏ qua.</small>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <form asp-action="DistributeToAllVip" asp-controller="Admin" method="post" style="display:inline;">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="couponId" value="@coupon.CouponId" />
+                        <button type="submit" class="btn btn-success">Phát hành ngay</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@* Delete Modals *@
+@foreach (var coupon in Model)
+{
+    <div class="modal fade" id="deleteModal@coupon.CouponId" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Xác nhận xóa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    Bạn có chắc muốn xóa mã giảm giá <strong>@coupon.Code</strong>?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <form asp-action="DeleteCoupon" asp-controller="Admin" method="post" style="display:inline;">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@coupon.CouponId" />
+                        <button type="submit" class="btn btn-danger">Xóa</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}

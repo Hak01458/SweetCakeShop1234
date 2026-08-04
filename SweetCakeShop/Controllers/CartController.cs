@@ -118,8 +118,6 @@ namespace SweetCakeShop.Controllers
 
             ViewBag.DeliveredOrderCount = deliveredOrderCount;
             ViewBag.IsVip = isVip;
-            ViewBag.VipDiscountRate =
-                CustomerLoyaltyService.VipDiscountRate;
 
             var model = new CheckoutViewModel
             {
@@ -147,12 +145,85 @@ namespace SweetCakeShop.Controllers
             if (User.Identity?.IsAuthenticated == true)
                 userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+            // Validate coupon if provided and user is VIP
+            if (checkout.CouponId.HasValue && !string.IsNullOrEmpty(userId))
+            {
+                var couponCustomer = await _context.CouponCustomers
+                    .Include(cc => cc.Coupon)
+                    .FirstOrDefaultAsync(cc => cc.CouponCustomerId == checkout.CouponId.Value 
+                        && cc.CustomerId == userId 
+                        && !cc.IsUsed);
+
+                if (couponCustomer == null || couponCustomer.Coupon == null)
+                {
+                    TempData["Error"] = "Mã giảm giá không hợp lệ hoặc đã được sử dụng.";
+                    return RedirectToAction("Checkout");
+                }
+
+                // Check if coupon is expired or inactive
+                if (!couponCustomer.Coupon.IsActive || 
+                    (couponCustomer.Coupon.ExpiryDate.HasValue && couponCustomer.Coupon.ExpiryDate.Value.Date < DateTime.Today))
+                {
+                    TempData["Error"] = "Mã giảm giá này đã hết hạn.";
+                    return RedirectToAction("Checkout");
+                }
+
+                // Check if user is VIP (only VIPs can use coupons)
+                var isVip = await _customerLoyaltyService.IsVipAsync(userId);
+                if (!isVip)
+                {
+                    TempData["Error"] = "Chỉ khách VIP mới có thể sử dụng mã giảm giá.";
+                    return RedirectToAction("Checkout");
+                }
+            }
+
             var order = await _orderService.CreateOrderAsync(cart, checkout, userId);
+
+            // Mark coupon as used if applied
+            if (checkout.CouponId.HasValue && !string.IsNullOrEmpty(userId))
+            {
+                var couponCustomer = await _context.CouponCustomers
+                    .FirstOrDefaultAsync(cc => cc.CouponCustomerId == checkout.CouponId.Value);
+
+                if (couponCustomer != null)
+                {
+                    couponCustomer.IsUsed = true;
+                    couponCustomer.UsedDate = DateTime.Now;
+                    _context.CouponCustomers.Update(couponCustomer);
+                    await _context.SaveChangesAsync();
+                }
+            }
 
             _cartService.ClearCart();
 
             // After creating order, redirect to Payment selection page
             return RedirectToAction("Payment", new { orderId = order.OrderId });
+        }
+
+        // API endpoint to get customer's available coupons
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> GetMyCoupons()
+        {
+            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var coupons = await _context.CouponCustomers
+                .Where(cc => cc.CustomerId == userId && !cc.IsUsed)
+                .Include(cc => cc.Coupon)
+                .Where(cc => cc.Coupon != null && cc.Coupon.IsActive && 
+                    (!cc.Coupon.ExpiryDate.HasValue || cc.Coupon.ExpiryDate.Value.Date >= DateTime.Today))
+                .Select(cc => new
+                {
+                    id = cc.CouponCustomerId,
+                    code = cc.Coupon.Code,
+                    discountPercent = cc.Coupon.DiscountPercent,
+                    customerType = cc.Coupon.CustomerType
+                })
+                .ToListAsync();
+
+            return Json(coupons);
         }
 
         // Payment selection & result page
