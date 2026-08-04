@@ -62,10 +62,6 @@ namespace SweetCakeShop.Services
                 }
             }
 
-            // Apply coupon discount if provided
-            decimal couponDiscount = 0;
-            int? couponId = null;
-
             if (checkout.CouponId.HasValue && !string.IsNullOrEmpty(userId))
             {
                 var couponCustomer = await _db.CouponCustomers
